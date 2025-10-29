@@ -41,11 +41,11 @@ user_x_offset = st.slider("Adjust shooter horizontal position (ft)", -15, 15, 0)
 user_y_distance = st.slider("Adjust shot distance from hoop (ft)", 10, 40, 20)
 user_height = st.slider("Shooter release height (ft)", 5, 8, 6)
 
-# Placeholder ball trajectory (replace with camera/sensor data later)
+# Placeholder ball trajectory
 top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
 top_view_y = [user_y_distance, 15, 8, 2, 0]
-side_view_x = [0, 10, 20, 30, 40]  # distance from shooter
-side_view_z = [user_height, 8, 9, 10, 10]  # height
+side_view_x = [0, 10, 20, 30, 40]
+side_view_z = [user_height, 8, 9, 10, 10]
 
 # -----------------------------
 # Top View - Park Court
@@ -66,20 +66,21 @@ arc_x = [6 * math.cos(math.radians(t)) for t in theta]
 arc_y = [19 + 6 * math.sin(math.radians(t)) for t in theta]
 top_fig.add_trace(go.Scatter(x=arc_x, y=arc_y, mode='lines', line=dict(color="orange")))
 
-# 3-point line (radius 19.75 ft)
+# 3-point line (radius 19.75 ft, endpoints aligned with sideline)
+side_offset = 25 - 5.25  # half width minus rim-to-sideline distance
 radius_3pt = 19.75
-theta_limit = math.degrees(math.acos(19.75 / radius_3pt))
+theta_limit = math.degrees(math.acos(side_offset / radius_3pt))
 theta = [i for i in range(int(-theta_limit), int(theta_limit)+1)]
 arc3_x = [radius_3pt * math.cos(math.radians(t)) for t in theta]
 arc3_y = [radius_3pt * math.sin(math.radians(t)) for t in theta]
 top_fig.add_trace(go.Scatter(x=arc3_x, y=arc3_y, mode='lines', line=dict(color="orange")))
 
-# Backboard (6 ft wide)
-top_fig.add_shape(type="line", x0=-3, y0=-1, x1=3, y1=-1,
+# Backboard (6 ft wide, y=0 inside court)
+top_fig.add_shape(type="line", x0=-3, y0=1, x1=3, y1=1,
                   line=dict(color="black", width=3))
 
 # Rim (1.5 ft diameter)
-top_fig.add_shape(type="circle", x0=-0.75, y0=-0.75, x1=0.75, y1=0.75,
+top_fig.add_shape(type="circle", x0=-0.75, y0=0.25, x1=0.75, y1=1.75,
                   line=dict(color="red", width=3))
 
 # Ball trajectory
@@ -105,32 +106,31 @@ top_fig.update_layout(
 side_fig = go.Figure()
 
 # Floor
-side_fig.add_shape(type="line", x0=0, y0=0, x1=45, y1=0,
+side_fig.add_shape(type="line", x0=0, y0=0, x1=47, y1=0,
                    line=dict(color="brown", width=3))
 
-# Backboard on right
+# Backboard on right (inside court)
 backboard_bottom = 6.5
 backboard_top = 10
-backboard_x0 = 40  # right side
-backboard_x1 = 40.5
+backboard_x = 44  # inside court
 side_fig.add_shape(type="rect",
-                   x0=backboard_x0, y0=backboard_bottom,
-                   x1=backboard_x1, y1=backboard_top,
+                   x0=backboard_x, y0=backboard_bottom,
+                   x1=backboard_x + 0.5, y1=backboard_top,
                    line=dict(color="black", width=2),
                    fillcolor="lightgray")
 
-# Rim as horizontal line (center at 10 ft)
+# Rim as horizontal line in front of backboard
 rim_y = 10
 rim_length = 1.5
 side_fig.add_shape(type="line",
-                   x0=backboard_x0 - rim_length, y0=rim_y,
-                   x1=backboard_x0, y1=rim_y,
+                   x0=backboard_x - rim_length, y0=rim_y,
+                   x1=backboard_x, y1=rim_y,
                    line=dict(color="red", width=3))
 
-# Net as vertical dashed line under rim
+# Net below rim
 side_fig.add_shape(type="line",
-                   x0=backboard_x0 - rim_length/2, y0=rim_y,
-                   x1=backboard_x0 - rim_length/2, y1=rim_y - 1,
+                   x0=backboard_x - rim_length/2, y0=rim_y,
+                   x1=backboard_x - rim_length/2, y1=rim_y - 1,
                    line=dict(color="blue", width=2, dash="dot"))
 
 # Ball trajectory
@@ -147,7 +147,7 @@ side_fig.update_layout(
     title="Side View of Ball Trajectory",
     xaxis_title="Distance from Shooter (ft)",
     yaxis_title="Height (ft)",
-    xaxis=dict(range=[0, 45]),
+    xaxis=dict(range=[0, 47]),
     yaxis=dict(range=[0, 12]),
     height=500
 )
