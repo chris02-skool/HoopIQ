@@ -1,19 +1,14 @@
-# 🎈 Blank app template
+# 🏀 HoopIQ Basketball Shot Tracker
 
-A simple Streamlit app template for you to modify!
+This Streamlit app visualizes basketball shot trajectories and tracks performance using sensor data.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Features
+- Display average stats for backboard, rim, and net
+- Simulate ball trajectories in top and side view
+- Fade older shots while keeping recent ones highlighted
+- Adjustable shot history and player position
 
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+## Run Locally
+```bash
+pip install -r requirements.txt
+streamlit run app.py
