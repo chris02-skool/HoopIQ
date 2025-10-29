@@ -1,7 +1,9 @@
 # This code is to create an app that tracks basketball player shots using Streamlit
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import math
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -71,8 +73,8 @@ top_fig.add_shape(type="rect", x0=-8, y0=0, x1=8, y1=19,
 
 # 3-point arc
 theta = [i for i in range(-90, 91)]
-arc_x = [23.75 * (go.math.cos(t * go.math.pi / 180)) for t in theta]
-arc_y = [23.75 * (go.math.sin(t * go.math.pi / 180)) for t in theta]
+arc_x = [23.75 * (math.cos(t * math.pi / 180)) for t in theta]
+arc_y = [23.75 * (math.sin(t * math.pi / 180)) for t in theta]
 top_fig.add_trace(go.Scatter(x=arc_x, y=arc_y, mode='lines', line=dict(color="orange")))
 
 # Hoop at (0, 0)
