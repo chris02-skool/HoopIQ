@@ -24,7 +24,7 @@ data = {
 df = pd.DataFrame(data)
 
 # Calculate averages
-component_avg = df[['Backboard', 'Rim', 'Nothing But Net']].mean()
+component_avg = df[['Backboard', 'Rim', 'Net']].mean()
 game_make_avg = df['Game Make'].mean()
 
 # Display the table
@@ -145,7 +145,7 @@ col2.plotly_chart(side_fig, use_container_width=True)
 # -----------------------------
 st.header("Notes")
 st.markdown("""
-- `Backboard`, `Rim`, `Nothing But Net` columns provide **technical feedback**.
+- `Backboard`, `Rim`, `Net` columns provide **technical feedback**.
 - `Game Make` column shows if the shot **scores a point** in a real game.
 - Replace placeholder data with actual sensor and camera inputs.
 - Averages and plots update automatically after every new shot.
