@@ -100,7 +100,7 @@ top_fig.add_shape(
 )
 
 # Free Throw Arc (radius 6 ft)
-free_throw_line_y = 15  # Free throw line distance from baseline
+free_throw_line_y = 19  # Free throw line distance from baseline
 arc_radius = 6
 theta = [i for i in range(0, 181)]
 arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
