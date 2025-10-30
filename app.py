@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import math
+import numpy as np
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -119,30 +120,32 @@ radius_3pt = 19.75  # 3-point radius from rim
 corner_distance = 5.25  # 63 in from sideline
 
 # Left corner straight line
+corner_left_y_top = rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2)
 top_fig.add_shape(
     type="line",
     x0=-court_width/2 + corner_distance,
     y0=0,
     x1=-court_width/2 + corner_distance,
-    y1=rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2),
+    y1=corner_left_y_top,
     line=dict(color="orange", width=2)
 )
 
 # Right corner straight line
+corner_right_y_top = rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2)
 top_fig.add_shape(
     type="line",
     x0=court_width/2 - corner_distance,
     y0=0,
     x1=court_width/2 - corner_distance,
-    y1=rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2),
+    y1=corner_right_y_top,
     line=dict(color="orange", width=2)
 )
 
 # Arc part of 3-point line
-theta_limit = math.degrees(math.acos((court_width/2 - corner_distance)/radius_3pt))
-theta_3pt = [i for i in range(int(-theta_limit), int(theta_limit)+1)]
-arc3_x = [rim_x + radius_3pt * math.cos(math.radians(t)) for t in theta_3pt]
-arc3_y = [rim_y + radius_3pt * math.sin(math.radians(t)) for t in theta_3pt]
+theta_limit_rad = math.acos((court_width/2 - corner_distance)/radius_3pt)
+theta_vals = np.linspace(-theta_limit_rad, theta_limit_rad, 100)  # 100 points for smoothness
+arc3_x = [rim_x + radius_3pt * math.sin(t) for t in theta_vals]
+arc3_y = [rim_y + radius_3pt * math.cos(t) for t in theta_vals]
 top_fig.add_trace(go.Scatter(
     x=arc3_x,
     y=arc3_y,
