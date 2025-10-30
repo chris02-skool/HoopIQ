@@ -214,8 +214,9 @@ side_fig.add_shape(
 
 # Rim - horizontal line in front of backboard
 rim_length = 1.5
-rim_x_left = backboard_x - 0.5 - rim_length/2
-rim_x_right = backboard_x - 0.5 + rim_length/2
+rim_offset_from_backboard = 0.5
+rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
+rim_x_right = backboard_x - rim_offset_from_backboard + rim_length/2
 side_fig.add_shape(
     type="line",
     x0=rim_x_left,
@@ -225,18 +226,19 @@ side_fig.add_shape(
     line=dict(color="red", width=3)
 )
 
-# Net - dotted trapezoid below rim
+# Net - dotted trapezoid slightly in front of backboard
 net_top_width = rim_length
 net_bottom_width = 1
 net_height = 1
+net_offset = 0.2  # net slightly in front of backboard
 
-net_top_left_x = rim_x_left
-net_top_right_x = rim_x_right
-net_bottom_left_x = rim_x_left + (net_top_width - net_bottom_width)/2
-net_bottom_right_x = rim_x_right - (net_top_width - net_bottom_width)/2
+net_top_left_x = rim_x_left - net_offset
+net_top_right_x = rim_x_right - net_offset
+net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
+net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
 net_bottom_y = rim_height - net_height
 
-# Trapezoid lines
+# Draw trapezoid
 side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
                    x1=net_top_right_x, y1=rim_height,
                    line=dict(color="blue", width=2))  # top (covered by rim)
