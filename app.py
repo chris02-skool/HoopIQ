@@ -202,15 +202,20 @@ backboard_width = 6  # ft
 backboard_bottom_y = rim_height - 3.5
 backboard_top_y = rim_height + 1.5
 
-# Draw backboard
+# Vertical Backboard on the right side
+backboard_x = 40  # position on the x-axis (distance from shooter)
+backboard_bottom_y = rim_height - 3.5  # bottom of backboard
+backboard_top_y = rim_height + 1.5     # top of backboard
+
 side_fig.add_shape(
     type="line",
-    x0=-backboard_width/2,
+    x0=backboard_x,
     y0=backboard_bottom_y,
-    x1=backboard_width/2,
+    x1=backboard_x,
     y1=backboard_top_y,
     line=dict(color="black", width=3)
 )
+
 
 # Draw rim as a circle
 rim_radius = 0.75  # 18 in / 2 = 0.75 ft
