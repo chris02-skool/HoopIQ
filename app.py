@@ -100,7 +100,7 @@ top_fig.add_shape(
 )
 
 # Free Throw Arc (radius 6 ft)
-free_throw_line_y = 19  # Free throw line distance from baseline
+free_throw_line_y = 19  # Distance from baseline to free throw line
 arc_radius = 6
 theta = [i for i in range(0, 181)]
 arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
@@ -112,10 +112,34 @@ top_fig.add_trace(go.Scatter(
     line=dict(color="orange")
 ))
 
-# 3-Point Line (radius 19.75 ft)
-radius_3pt = 19.75
-side_offset = court_width/2 - 5.25  # 5.25 ft from sideline
-theta_limit = math.degrees(math.acos(side_offset / radius_3pt))
+# -----------------------------
+# 3-Point Line (HS court)
+# -----------------------------
+radius_3pt = 19.75  # 3-point radius from rim
+corner_distance = 5.25  # 63 in from sideline
+
+# Left corner straight line
+top_fig.add_shape(
+    type="line",
+    x0=-court_width/2 + corner_distance,
+    y0=0,
+    x1=-court_width/2 + corner_distance,
+    y1=rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2),
+    line=dict(color="orange", width=2)
+)
+
+# Right corner straight line
+top_fig.add_shape(
+    type="line",
+    x0=court_width/2 - corner_distance,
+    y0=0,
+    x1=court_width/2 - corner_distance,
+    y1=rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2),
+    line=dict(color="orange", width=2)
+)
+
+# Arc part of 3-point line
+theta_limit = math.degrees(math.acos((court_width/2 - corner_distance)/radius_3pt))
 theta_3pt = [i for i in range(int(-theta_limit), int(theta_limit)+1)]
 arc3_x = [rim_x + radius_3pt * math.cos(math.radians(t)) for t in theta_3pt]
 arc3_y = [rim_y + radius_3pt * math.sin(math.radians(t)) for t in theta_3pt]
@@ -126,7 +150,9 @@ top_fig.add_trace(go.Scatter(
     line=dict(color="orange", width=2)
 ))
 
+# -----------------------------
 # Ball trajectory
+# -----------------------------
 top_fig.add_trace(go.Scatter(
     x=top_view_x,
     y=top_view_y,
@@ -136,6 +162,9 @@ top_fig.add_trace(go.Scatter(
     name="Ball Trajectory"
 ))
 
+# -----------------------------
+# Layout
+# -----------------------------
 top_fig.update_layout(
     title="Top View of Ball Trajectory",
     xaxis=dict(range=[-court_width/2, court_width/2], scaleanchor="y", scaleratio=1),
