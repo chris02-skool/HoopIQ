@@ -264,3 +264,13 @@ st.markdown("""
 - Replace placeholder data with actual sensor and camera inputs.
 - Averages and plots update automatically after every new shot.
 """)
+
+
+
+# new notes: add check/tab/selection to show the which shot they want to see (latest, best, worst, custom)
+# add a heat map of shot locations on the court to show how good you shot from a certain spot
+# look into exporting data to csv or excel for further analysis
+# add sessions for when the user uses the app multiple times
+# add user authentication for multiple users
+# add ability to save and load shot data
+# add 10 session limit, with the oldest 7 show averages and the latest 3 show individual shot data
