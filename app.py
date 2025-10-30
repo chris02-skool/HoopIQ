@@ -167,18 +167,6 @@ top_fig.add_shape(
 )
 
 # -----------------------------
-# Ball trajectory (placeholder)
-# -----------------------------
-top_fig.add_trace(go.Scatter(
-    x=top_view_x,
-    y=top_view_y,
-    mode='lines+markers',
-    line=dict(color="blue", width=3),
-    marker=dict(size=8),
-    name="Ball Trajectory"
-))
-
-# -----------------------------
 # Layout
 # -----------------------------
 top_fig.update_layout(
@@ -251,16 +239,6 @@ side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
 side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
                    x1=net_bottom_right_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
-
-# Placeholder ball trajectory (side view)
-side_fig.add_trace(go.Scatter(
-    x=[0, 10, 20, 30, 40],
-    y=[6, 8, 9, 10, 10],
-    mode='lines+markers',
-    line=dict(color="blue", width=3),
-    marker=dict(size=8),
-    name="Ball Trajectory"
-))
 
 # Layout
 side_fig.update_layout(
