@@ -45,7 +45,7 @@ top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
 top_view_y = [user_y_distance, 25, 10, 2, 1]
 
 # -----------------------------
-# Top View - Correct High School Court
+# Top View - Correct High School Court with simplified 3-point arc
 # -----------------------------
 top_fig = go.Figure()
 
@@ -64,11 +64,10 @@ top_fig.add_shape(
 )
 
 # Backboard and Rim
-rim_y = 5.25  # Rim center 63 in (5.25 ft) from baseline
+rim_y = 5.25
 rim_x = 0
-
-backboard_width = 6  # 72 in = 6 ft wide
-backboard_y = rim_y - 0.5  # 0.5 ft in front of rim
+backboard_width = 6
+backboard_y = rim_y - 0.5
 top_fig.add_shape(
     type="line",
     x0=-backboard_width/2,
@@ -78,7 +77,7 @@ top_fig.add_shape(
     line=dict(color="black", width=3)
 )
 
-rim_diameter = 1.5  # 18 in = 1.5 ft
+rim_diameter = 1.5
 top_fig.add_shape(
     type="circle",
     x0=rim_x - rim_diameter/2,
@@ -88,7 +87,7 @@ top_fig.add_shape(
     line=dict(color="red", width=3)
 )
 
-# Key / Box (12 x 19 ft)
+# Key / Box
 box_width = 12
 box_length = 19
 top_fig.add_shape(
@@ -100,8 +99,8 @@ top_fig.add_shape(
     line=dict(color="orange", width=2)
 )
 
-# Free Throw Arc (radius 6 ft)
-free_throw_line_y = 19  # Distance from baseline to free throw line
+# Free Throw Arc
+free_throw_line_y = 19
 arc_radius = 6
 theta = [i for i in range(0, 181)]
 arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
@@ -114,38 +113,23 @@ top_fig.add_trace(go.Scatter(
 ))
 
 # -----------------------------
-# 3-Point Line (HS court)
+# Simplified 3-Point Arc
 # -----------------------------
-radius_3pt = 19.75  # 3-point radius from rim
-corner_distance = 5.25  # 63 in from sideline
+radius_3pt = 19.75
 
-# Left corner straight line
-corner_left_y_top = rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2)
-top_fig.add_shape(
-    type="line",
-    x0=-court_width/2 + corner_distance,
-    y0=0,
-    x1=-court_width/2 + corner_distance,
-    y1=corner_left_y_top,
-    line=dict(color="orange", width=2)
-)
+# Horizontal limits for the arc (5.25 ft from sidelines)
+x_left = - (court_width/2 - 5.25)
+x_right = (court_width/2 - 5.25)
 
-# Right corner straight line
-corner_right_y_top = rim_y + math.sqrt(radius_3pt**2 - (court_width/2 - corner_distance)**2)
-top_fig.add_shape(
-    type="line",
-    x0=court_width/2 - corner_distance,
-    y0=0,
-    x1=court_width/2 - corner_distance,
-    y1=corner_right_y_top,
-    line=dict(color="orange", width=2)
-)
+# Corresponding angles from center
+theta_left = math.asin(x_left / radius_3pt)
+theta_right = math.asin(x_right / radius_3pt)
 
-# Arc part of 3-point line
-theta_limit_rad = math.acos((court_width/2 - corner_distance)/radius_3pt)
-theta_vals = np.linspace(-theta_limit_rad, theta_limit_rad, 100)  # 100 points for smoothness
-arc3_x = [rim_x + radius_3pt * math.sin(t) for t in theta_vals]
-arc3_y = [rim_y + radius_3pt * math.cos(t) for t in theta_vals]
+# Generate points along the arc
+theta_vals = np.linspace(theta_left, theta_right, 100)
+arc3_x = rim_x + radius_3pt * np.sin(theta_vals)
+arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
+
 top_fig.add_trace(go.Scatter(
     x=arc3_x,
     y=arc3_y,
@@ -154,7 +138,7 @@ top_fig.add_trace(go.Scatter(
 ))
 
 # -----------------------------
-# Ball trajectory
+# Ball trajectory (placeholder)
 # -----------------------------
 top_fig.add_trace(go.Scatter(
     x=top_view_x,
