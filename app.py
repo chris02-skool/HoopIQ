@@ -189,23 +189,68 @@ top_fig.update_layout(
 )
 
 # -----------------------------
-# Side View - Placeholder
+# Side View - High School Rim & Backboard
 # -----------------------------
 side_fig = go.Figure()
+
+# Court vertical dimensions
+floor_y = 0
+rim_height = 10
+
+# Backboard dimensions
+backboard_width = 6  # ft
+backboard_bottom_y = rim_height - 3.5
+backboard_top_y = rim_height + 1.5
+
+# Draw backboard
+side_fig.add_shape(
+    type="line",
+    x0=-backboard_width/2,
+    y0=backboard_bottom_y,
+    x1=backboard_width/2,
+    y1=backboard_top_y,
+    line=dict(color="black", width=3)
+)
+
+# Draw rim as a circle
+rim_radius = 0.75  # 18 in / 2 = 0.75 ft
+side_fig.add_shape(
+    type="circle",
+    x0=-rim_radius,
+    y0=rim_height - rim_radius,
+    x1=rim_radius,
+    y1=rim_height + rim_radius,
+    line=dict(color="red", width=3)
+)
+
+# Optional: Draw net as smaller circle inside rim
+net_radius = 0.5
+side_fig.add_shape(
+    type="circle",
+    x0=-net_radius,
+    y0=rim_height - net_radius,
+    x1=net_radius,
+    y1=rim_height,
+    line=dict(color="blue", width=2)
+)
+
+# Placeholder ball trajectory (side view)
 side_fig.add_trace(go.Scatter(
     x=[0, 10, 20, 30, 40],
-    y=[user_height, 8, 9, 10, 10],
+    y=[6, 8, 9, 10, 10],
     mode='lines+markers',
     line=dict(color="blue", width=3),
     marker=dict(size=8),
     name="Ball Trajectory"
 ))
+
+# Layout
 side_fig.update_layout(
-    title="Side View (Placeholder)",
+    title="Side View of Ball Trajectory",
     xaxis_title="Distance from Shooter (ft)",
     yaxis_title="Height (ft)",
-    xaxis=dict(range=[0, court_length]),
-    yaxis=dict(range=[0, 12]),
+    xaxis=dict(range=[-5, 40]),
+    yaxis=dict(range=[0, 15]),
     height=500
 )
 
