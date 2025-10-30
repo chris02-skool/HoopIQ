@@ -45,7 +45,7 @@ top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
 top_view_y = [user_y_distance, 25, 10, 2, 1]
 
 # -----------------------------
-# Top View - Correct High School Court with simplified 3-point arc
+# Top View - Correct High School Court with 3-point arc and corner lines
 # -----------------------------
 top_fig = go.Figure()
 
@@ -113,7 +113,7 @@ top_fig.add_trace(go.Scatter(
 ))
 
 # -----------------------------
-# Simplified 3-Point Arc
+# 3-Point Arc
 # -----------------------------
 radius_3pt = 19.75
 
@@ -136,6 +136,35 @@ top_fig.add_trace(go.Scatter(
     mode='lines',
     line=dict(color="orange", width=2)
 ))
+
+# -----------------------------
+# 3-Point Corner Lines
+# -----------------------------
+corner_distance = 5.25  # 5.25 ft from sideline
+
+# Left corner line
+x_left_corner = -court_width/2 + corner_distance
+y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
+top_fig.add_shape(
+    type="line",
+    x0=x_left_corner,
+    y0=0,
+    x1=x_left_corner,
+    y1=y_left_top,
+    line=dict(color="orange", width=2)
+)
+
+# Right corner line
+x_right_corner = court_width/2 - corner_distance
+y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
+top_fig.add_shape(
+    type="line",
+    x0=x_right_corner,
+    y0=0,
+    x1=x_right_corner,
+    y1=y_right_top,
+    line=dict(color="orange", width=2)
+)
 
 # -----------------------------
 # Ball trajectory (placeholder)
