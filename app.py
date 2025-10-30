@@ -226,10 +226,7 @@ net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
 net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
 net_bottom_y = rim_height - net_height
 
-# Draw trapezoid
-side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
-                   x1=net_top_right_x, y1=rim_height,
-                   line=dict(color="blue", width=2))  # top (covered by rim)
+# Draw trapezoid minus the top line
 side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
                    x1=net_bottom_left_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
