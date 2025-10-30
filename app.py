@@ -44,53 +44,87 @@ top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
 top_view_y = [user_y_distance, 25, 10, 2, 1]
 
 # -----------------------------
-# Top View - Correct Court
+# Top View - Correct High School Court
 # -----------------------------
 top_fig = go.Figure()
 
-# Court dimensions
+# Court dimensions (ft)
 court_width = 50
 court_length = 47
 
 # Court boundaries
-top_fig.add_shape(type="rect", x0=-court_width/2, y0=0, x1=court_width/2, y1=court_length,
-                  line=dict(color="gray", width=2))
+top_fig.add_shape(
+    type="rect",
+    x0=-court_width/2,
+    y0=0,
+    x1=court_width/2,
+    y1=court_length,
+    line=dict(color="gray", width=2)
+)
 
-# Backboard (6 ft wide) at baseline y=0
-backboard_width = 6
-top_fig.add_shape(type="line", x0=-backboard_width/2, y0=0, x1=backboard_width/2, y1=0,
-                  line=dict(color="black", width=3))
+# Backboard and Rim
+rim_y = 5.25  # Rim center 63 in (5.25 ft) from baseline
+rim_x = 0
 
-# Rim in front of backboard (1.5 ft diameter)
-rim_diameter = 1.5
-top_fig.add_shape(type="circle",
-                  x0=-rim_diameter/2, y0=-0.75,
-                  x1=rim_diameter/2, y1=0.75,
-                  line=dict(color="red", width=3))
+backboard_width = 6  # 72 in = 6 ft wide
+backboard_y = rim_y - 0.5  # 0.5 ft in front of rim
+top_fig.add_shape(
+    type="line",
+    x0=-backboard_width/2,
+    y0=backboard_y,
+    x1=backboard_width/2,
+    y1=backboard_y,
+    line=dict(color="black", width=3)
+)
 
-# Key / box (12x19 ft)
+rim_diameter = 1.5  # 18 in = 1.5 ft
+top_fig.add_shape(
+    type="circle",
+    x0=rim_x - rim_diameter/2,
+    y0=rim_y - rim_diameter/2,
+    x1=rim_x + rim_diameter/2,
+    y1=rim_y + rim_diameter/2,
+    line=dict(color="red", width=3)
+)
+
+# Key / Box (12 x 19 ft)
 box_width = 12
 box_length = 19
-top_fig.add_shape(type="rect", x0=-box_width/2, y0=0, x1=box_width/2, y1=box_length,
-                  line=dict(color="orange", width=2))
+top_fig.add_shape(
+    type="rect",
+    x0=-box_width/2,
+    y0=0,
+    x1=box_width/2,
+    y1=box_length,
+    line=dict(color="orange", width=2)
+)
 
-# Free throw arc (radius 6 ft)
+# Free Throw Arc (radius 6 ft)
+free_throw_line_y = 15  # Free throw line distance from baseline
 arc_radius = 6
 theta = [i for i in range(0, 181)]
 arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
-arc_y = [box_length + arc_radius * math.sin(math.radians(t)) for t in theta]
-top_fig.add_trace(go.Scatter(x=arc_x, y=arc_y, mode='lines', line=dict(color="orange")))
+arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
+top_fig.add_trace(go.Scatter(
+    x=arc_x,
+    y=arc_y,
+    mode='lines',
+    line=dict(color="orange")
+))
 
-# 3-point arc (radius 19.75 ft)
+# 3-Point Line (radius 19.75 ft)
 radius_3pt = 19.75
-side_offset = court_width/2 - 5.25
+side_offset = court_width/2 - 5.25  # 5.25 ft from sideline
 theta_limit = math.degrees(math.acos(side_offset / radius_3pt))
 theta_3pt = [i for i in range(int(-theta_limit), int(theta_limit)+1)]
-rim_y = 1  # Rim slightly in front of backboard
-rim_x = 0
 arc3_x = [rim_x + radius_3pt * math.cos(math.radians(t)) for t in theta_3pt]
 arc3_y = [rim_y + radius_3pt * math.sin(math.radians(t)) for t in theta_3pt]
-top_fig.add_trace(go.Scatter(x=arc3_x, y=arc3_y, mode='lines', line=dict(color="orange", width=2)))
+top_fig.add_trace(go.Scatter(
+    x=arc3_x,
+    y=arc3_y,
+    mode='lines',
+    line=dict(color="orange", width=2)
+))
 
 # Ball trajectory
 top_fig.add_trace(go.Scatter(
@@ -102,10 +136,12 @@ top_fig.add_trace(go.Scatter(
     name="Ball Trajectory"
 ))
 
-top_fig.update_layout(title="Top View of Ball Trajectory",
-                      xaxis=dict(range=[-court_width/2, court_width/2]),
-                      yaxis=dict(range=[-5, court_length+5]),
-                      height=500)
+top_fig.update_layout(
+    title="Top View of Ball Trajectory",
+    xaxis=dict(range=[-court_width/2, court_width/2], scaleanchor="y", scaleratio=1),
+    yaxis=dict(range=[-5, court_length+5]),
+    height=500
+)
 
 # -----------------------------
 # Side View - Placeholder
@@ -119,12 +155,14 @@ side_fig.add_trace(go.Scatter(
     marker=dict(size=8),
     name="Ball Trajectory"
 ))
-side_fig.update_layout(title="Side View (Placeholder)",
-                       xaxis_title="Distance from Shooter (ft)",
-                       yaxis_title="Height (ft)",
-                       xaxis=dict(range=[0, court_length]),
-                       yaxis=dict(range=[0, 12]),
-                       height=500)
+side_fig.update_layout(
+    title="Side View (Placeholder)",
+    xaxis_title="Distance from Shooter (ft)",
+    yaxis_title="Height (ft)",
+    xaxis=dict(range=[0, court_length]),
+    yaxis=dict(range=[0, 12]),
+    height=500
+)
 
 # -----------------------------
 # Display side by side
