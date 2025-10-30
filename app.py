@@ -189,23 +189,19 @@ top_fig.update_layout(
 )
 
 # -----------------------------
-# Side View - High School Rim & Backboard
+# Side View - Correct Backboard, Rim, Net
 # -----------------------------
 side_fig = go.Figure()
 
-# Court vertical dimensions
+# Rim and court dimensions
 floor_y = 0
 rim_height = 10
 
-# Backboard dimensions
-backboard_width = 6  # ft
-backboard_bottom_y = rim_height - 3.5
-backboard_top_y = rim_height + 1.5
-
-# Vertical Backboard on the right side
-backboard_x = 40  # position on the x-axis (distance from shooter)
-backboard_bottom_y = rim_height - 3.5  # bottom of backboard
-backboard_top_y = rim_height + 1.5     # top of backboard
+# Backboard - vertical
+backboard_height = 3.5
+backboard_x = 40
+backboard_bottom_y = rim_height - backboard_height/2  # 8.25
+backboard_top_y = backboard_bottom_y + backboard_height  # 11.75
 
 side_fig.add_shape(
     type="line",
@@ -216,28 +212,43 @@ side_fig.add_shape(
     line=dict(color="black", width=3)
 )
 
-
-# Draw rim as a circle
-rim_radius = 0.75  # 18 in / 2 = 0.75 ft
+# Rim - horizontal line in front of backboard
+rim_length = 1.5
+rim_x_left = backboard_x - 0.5 - rim_length/2
+rim_x_right = backboard_x - 0.5 + rim_length/2
 side_fig.add_shape(
-    type="circle",
-    x0=-rim_radius,
-    y0=rim_height - rim_radius,
-    x1=rim_radius,
-    y1=rim_height + rim_radius,
+    type="line",
+    x0=rim_x_left,
+    y0=rim_height,
+    x1=rim_x_right,
+    y1=rim_height,
     line=dict(color="red", width=3)
 )
 
-# Optional: Draw net as smaller circle inside rim
-net_radius = 0.5
-side_fig.add_shape(
-    type="circle",
-    x0=-net_radius,
-    y0=rim_height - net_radius,
-    x1=net_radius,
-    y1=rim_height,
-    line=dict(color="blue", width=2)
-)
+# Net - dotted trapezoid below rim
+net_top_width = rim_length
+net_bottom_width = 1
+net_height = 1
+
+net_top_left_x = rim_x_left
+net_top_right_x = rim_x_right
+net_bottom_left_x = rim_x_left + (net_top_width - net_bottom_width)/2
+net_bottom_right_x = rim_x_right - (net_top_width - net_bottom_width)/2
+net_bottom_y = rim_height - net_height
+
+# Trapezoid lines
+side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
+                   x1=net_top_right_x, y1=rim_height,
+                   line=dict(color="blue", width=2))  # top (covered by rim)
+side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
+                   x1=net_bottom_left_x, y1=net_bottom_y,
+                   line=dict(color="blue", width=2, dash='dot'))
+side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
+                   x1=net_bottom_right_x, y1=net_bottom_y,
+                   line=dict(color="blue", width=2, dash='dot'))
+side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
+                   x1=net_bottom_right_x, y1=net_bottom_y,
+                   line=dict(color="blue", width=2, dash='dot'))
 
 # Placeholder ball trajectory (side view)
 side_fig.add_trace(go.Scatter(
@@ -254,7 +265,7 @@ side_fig.update_layout(
     title="Side View of Ball Trajectory",
     xaxis_title="Distance from Shooter (ft)",
     yaxis_title="Height (ft)",
-    xaxis=dict(range=[-5, 40]),
+    xaxis=dict(range=[-5, 45]),
     yaxis=dict(range=[0, 15]),
     height=500
 )
