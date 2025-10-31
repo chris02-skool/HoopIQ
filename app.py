@@ -264,7 +264,7 @@ col1.plotly_chart(top_fig, use_container_width=True)
 col2.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# 3️⃣ EXPORT FUNCTIONALITY
+# 3️⃣ EXPORT FUNCTIONALITY (MULTIPLE SELECTION)
 # -----------------------------
 st.header("Export Data")
 
@@ -279,49 +279,53 @@ game_make_rate = pd.DataFrame({
     "Make %": [df['Game Make'].mean() * 100]
 })
 
-# User selects which data to export
-export_option = st.selectbox(
-    "Select Data to Export:",
+# User selects which datasets to export (can choose multiple)
+export_options = st.multiselect(
+    "Select Data to Export (can choose multiple):",
     ["Shot Data", "Component Averages", "Game Make Rate"]
 )
 
+# User selects export format
 export_format = st.selectbox(
     "Select Export Format:",
     ["CSV", "Excel", "JSON"]
 )
 
-if export_option == "Shot Data":
-    data_to_export = shot_data
-elif export_option == "Component Averages":
-    data_to_export = component_averages
-else:
-    data_to_export = game_make_rate
+# Generate download buttons for each selected dataset
+for option in export_options:
+    if option == "Shot Data":
+        data_to_export = shot_data
+    elif option == "Component Averages":
+        data_to_export = component_averages
+    elif option == "Game Make Rate":
+        data_to_export = game_make_rate
+    else:
+        continue  # safety
 
-if st.button("Export"):
     if export_format == "CSV":
         csv = data_to_export.to_csv(index=False).encode("utf-8")
         st.download_button(
-            label="Download CSV",
+            label=f"Download {option} as CSV",
             data=csv,
-            file_name=f"{export_option.replace(' ', '_')}.csv",
+            file_name=f"{option.replace(' ', '_')}.csv",
             mime="text/csv"
         )
     elif export_format == "Excel":
-        with pd.ExcelWriter(f"{export_option.replace(' ', '_')}.xlsx", engine="openpyxl") as writer:
+        with pd.ExcelWriter(f"{option.replace(' ', '_')}.xlsx", engine="openpyxl") as writer:
             data_to_export.to_excel(writer, index=False)
-        with open(f"{export_option.replace(' ', '_')}.xlsx", "rb") as f:
+        with open(f"{option.replace(' ', '_')}.xlsx", "rb") as f:
             st.download_button(
-                label="Download Excel",
+                label=f"Download {option} as Excel",
                 data=f,
-                file_name=f"{export_option.replace(' ', '_')}.xlsx",
+                file_name=f"{option.replace(' ', '_')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
     elif export_format == "JSON":
         json_data = data_to_export.to_json(orient="records", indent=4)
         st.download_button(
-            label="Download JSON",
+            label=f"Download {option} as JSON",
             data=json_data,
-            file_name=f"{export_option.replace(' ', '_')}.json",
+            file_name=f"{option.replace(' ', '_')}.json",
             mime="application/json"
         )
 
@@ -348,5 +352,5 @@ NOTES:
 - Rim is now properly horizontal and layered over the net.
 - Net is a dotted trapezoid offset from the backboard.
 - Next Step: Add real ball trajectory data when available.
-- Future: Let users export additional data (e.g., trajectory stats).
+- Future: Let users export additional data (e.g., trajectory stats) and multiple selections.
 """
