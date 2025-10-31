@@ -188,8 +188,8 @@ rim_height = 10
 # Backboard - vertical
 backboard_height = 3.5
 backboard_x = 40
-backboard_bottom_y = rim_height - backboard_height/2  # 8.25
-backboard_top_y = backboard_bottom_y + backboard_height  # 11.75
+backboard_bottom_y = rim_height - backboard_height+2.5  # 9
+backboard_top_y = backboard_bottom_y + backboard_height  # 12.5
 
 side_fig.add_shape(
     type="line",
