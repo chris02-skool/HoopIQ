@@ -1,181 +1,266 @@
+# Basketball Shot Tracker App
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
+import math
 import numpy as np
-import matplotlib.pyplot as plt
 
-# -------------------------------
-# PAGE CONFIGURATION
-# -------------------------------
-st.set_page_config(page_title="Basketball Shot Analytics", layout="wide")
+st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
+st.title("🏀 Basketball Shot Tracker")
 
-# -------------------------------
-# SIDEBAR
-# -------------------------------
-st.sidebar.title("🏀 Basketball Shot Analytics")
+# -----------------------------
+# Section 1: Shot Results Table
+# -----------------------------
+st.header("Shot Results")
 
-# User options for data export
-export_option = st.sidebar.selectbox(
-    "Select Data to Export:",
-    [
-        "Shot Data",
-        "Component Averages",
-        "Game Make Rate"
-    ]
+# Placeholder data for testing
+data = {
+    "Backboard": [1, 0, 1, 1, 0],
+    "Rim": [1, 0, 0, 1, 1],
+    "Net": [0, 0, 1, 0, 1],
+    "Game Make": [1, 0, 1, 1, 1]
+}
+df = pd.DataFrame(data)
+
+component_avg = df[['Backboard', 'Rim', 'Net']].mean()
+game_make_avg = df['Game Make'].mean()
+
+st.dataframe(df)
+st.markdown("**Technical Component Averages:**")
+st.write(component_avg)
+st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
+
+# -----------------------------
+# Section 2: Trajectory Plots
+# -----------------------------
+st.header("Ball Trajectory")
+
+# User adjustable parameters
+user_x_offset = st.slider("Adjust shooter horizontal position (ft)", -15, 15, 0)
+user_y_distance = st.slider("Adjust shot distance from hoop (ft)", 10, 40, 20)
+user_height = st.slider("Shooter release height (ft)", 5, 8, 6)
+
+# Placeholder ball trajectory data
+top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
+top_view_y = [user_y_distance, 25, 10, 2, 1]
+
+# -----------------------------
+# Top View - Correct High School Court with 3-point arc and corner lines
+# -----------------------------
+top_fig = go.Figure()
+
+# Court dimensions (ft)
+court_width = 50
+court_length = 47
+
+# Court boundaries
+top_fig.add_shape(
+    type="rect",
+    x0=-court_width/2,
+    y0=0,
+    x1=court_width/2,
+    y1=court_length,
+    line=dict(color="gray", width=2)
 )
 
-export_format = st.sidebar.selectbox(
+# Backboard and Rim
+rim_y = 5.25
+rim_x = 0
+backboard_width = 6
+backboard_y = rim_y - 0.5
+top_fig.add_shape(
+    type="line",
+    x0=-backboard_width/2,
+    y0=backboard_y,
+    x1=backboard_width/2,
+    y1=backboard_y,
+    line=dict(color="black", width=3)
+)
+
+rim_diameter = 1.5
+top_fig.add_shape(
+    type="circle",
+    x0=rim_x - rim_diameter/2,
+    y0=rim_y - rim_diameter/2,
+    x1=rim_x + rim_diameter/2,
+    y1=rim_y + rim_diameter/2,
+    line=dict(color="red", width=3)
+)
+
+# Key / Box
+box_width = 12
+box_length = 19
+top_fig.add_shape(
+    type="rect",
+    x0=-box_width/2,
+    y0=0,
+    x1=box_width/2,
+    y1=box_length,
+    line=dict(color="orange", width=2)
+)
+
+# Free Throw Arc
+free_throw_line_y = 19
+arc_radius = 6
+theta = [i for i in range(0, 181)]
+arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
+arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
+top_fig.add_trace(go.Scatter(
+    x=arc_x,
+    y=arc_y,
+    mode='lines',
+    line=dict(color="orange")
+))
+
+# 3-Point Arc
+radius_3pt = 19.75
+x_left = - (court_width/2 - 5.25)
+x_right = (court_width/2 - 5.25)
+theta_left = math.asin(x_left / radius_3pt)
+theta_right = math.asin(x_right / radius_3pt)
+theta_vals = np.linspace(theta_left, theta_right, 100)
+arc3_x = rim_x + radius_3pt * np.sin(theta_vals)
+arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
+top_fig.add_trace(go.Scatter(
+    x=arc3_x,
+    y=arc3_y,
+    mode='lines',
+    line=dict(color="orange", width=2)
+))
+
+# 3-Point Corner Lines
+corner_distance = 5.25
+x_left_corner = -court_width/2 + corner_distance
+y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
+top_fig.add_shape(
+    type="line",
+    x0=x_left_corner,
+    y0=0,
+    x1=x_left_corner,
+    y1=y_left_top,
+    line=dict(color="orange", width=2)
+)
+x_right_corner = court_width/2 - corner_distance
+y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
+top_fig.add_shape(
+    type="line",
+    x0=x_right_corner,
+    y0=0,
+    x1=x_right_corner,
+    y1=y_right_top,
+    line=dict(color="orange", width=2)
+)
+
+# Ball trajectory (placeholder)
+top_fig.add_trace(go.Scatter(
+    x=top_view_x,
+    y=top_view_y,
+    mode='lines+markers',
+    line=dict(color="blue", width=3),
+    marker=dict(size=8),
+    name="Ball Trajectory"
+))
+
+top_fig.update_layout(
+    title="Top View of Ball Trajectory",
+    xaxis=dict(range=[-court_width/2, court_width/2], scaleanchor="y", scaleratio=1),
+    yaxis=dict(range=[-5, court_length+5]),
+    height=500
+)
+
+# -----------------------------
+# Side View - High School Rim & Backboard
+# -----------------------------
+side_fig = go.Figure()
+
+floor_y = 0
+rim_height = 10
+
+backboard_width = 6
+backboard_bottom_y = rim_height - 3.5
+backboard_top_y = rim_height + 1.5
+backboard_x = 40
+
+side_fig.add_shape(
+    type="line",
+    x0=backboard_x,
+    y0=backboard_bottom_y,
+    x1=backboard_x,
+    y1=backboard_top_y,
+    line=dict(color="black", width=3)
+)
+
+rim_radius = 0.75
+side_fig.add_shape(
+    type="circle",
+    x0=-rim_radius,
+    y0=rim_height - rim_radius,
+    x1=rim_radius,
+    y1=rim_height + rim_radius,
+    line=dict(color="red", width=3)
+)
+
+net_radius = 0.5
+side_fig.add_shape(
+    type="circle",
+    x0=-net_radius,
+    y0=rim_height - net_radius,
+    x1=net_radius,
+    y1=rim_height,
+    line=dict(color="blue", width=2, dash="dot")
+)
+
+# Placeholder ball trajectory
+side_fig.add_trace(go.Scatter(
+    x=[0, 10, 20, 30, 40],
+    y=[6, 8, 9, 10, 10],
+    mode='lines+markers',
+    line=dict(color="blue", width=3),
+    marker=dict(size=8),
+    name="Ball Trajectory"
+))
+
+side_fig.update_layout(
+    title="Side View of Ball Trajectory",
+    xaxis_title="Distance from Shooter (ft)",
+    yaxis_title="Height (ft)",
+    xaxis=dict(range=[-5, 40]),
+    yaxis=dict(range=[0, 15]),
+    height=500
+)
+
+# Display side by side
+col1, col2 = st.columns(2)
+col1.plotly_chart(top_fig, use_container_width=True)
+col2.plotly_chart(side_fig, use_container_width=True)
+
+# -----------------------------
+# 3️⃣ EXPORT FUNCTIONALITY
+# -----------------------------
+st.header("Export Data")
+
+# Example placeholders
+shot_data = df.copy()
+component_averages = pd.DataFrame(component_avg).reset_index()
+component_averages.columns = ["Component", "Average"]
+game_make_rate = pd.DataFrame({
+    "Total Shots": [len(df)],
+    "Makes": [df['Game Make'].sum()],
+    "Misses": [len(df) - df['Game Make'].sum()],
+    "Make %": [df['Game Make'].mean() * 100]
+})
+
+# User selects which data to export
+export_option = st.selectbox(
+    "Select Data to Export:",
+    ["Shot Data", "Component Averages", "Game Make Rate"]
+)
+
+export_format = st.selectbox(
     "Select Export Format:",
     ["CSV", "Excel", "JSON"]
 )
 
-# -------------------------------
-# MAIN LAYOUT
-# -------------------------------
-st.title("🏀 Basketball Shot Visualizer")
-
-tab1, tab2 = st.tabs(["Top View", "Side View"])
-
-# --------------------------------------
-# 1️⃣ TOP VIEW (Court Layout + 3PT Arc)
-# --------------------------------------
-with tab1:
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.set_xlim(0, 50)
-    ax.set_ylim(0, 25)
-
-    # Outer boundary lines
-    court_outline = plt.Rectangle((0, 0), 50, 25, fill=False, color="black", lw=2)
-    ax.add_patch(court_outline)
-
-    # Paint area (key)
-    paint = plt.Rectangle((19, 8), 12, 9, fill=False, color="orange", lw=2)
-    ax.add_patch(paint)
-
-    # Free throw circle (adjusted)
-    free_throw_center_x, free_throw_center_y = 25, 19  # <-- Adjusted from before
-    free_throw_circle = plt.Circle(
-        (free_throw_center_x, free_throw_center_y), 6, fill=False, color="orange", lw=2
-    )
-    ax.add_patch(free_throw_circle)
-
-    # Backboard + rim
-    backboard = plt.Line2D([24, 26], [4, 4], color="black", lw=3)
-    ax.add_line(backboard)
-
-    rim = plt.Circle((25, 4.75), 0.75, fill=False, color="red", lw=3)
-    ax.add_patch(rim)
-
-    # 3-Point Arc and side lines
-    three_point_center = (25, 4)
-    three_point_radius = 23.75 / 12  # 23'9" in feet -> inches to feet simplified
-    three_point_radius = 23.75  # feet
-    theta = np.linspace(np.pi / 8, np.pi - np.pi / 8, 200)
-    x_arc = three_point_center[0] + three_point_radius * np.cos(theta)
-    y_arc = three_point_center[1] + three_point_radius * np.sin(theta)
-    ax.plot(x_arc, y_arc, color="blue", lw=2)
-
-    # Tangent straight lines
-    ax.plot([3, 3], [0, 8], color="blue", lw=2)
-    ax.plot([47, 47], [0, 8], color="blue", lw=2)
-
-    # Placeholder ball trajectory (will replace later)
-    x_traj = np.linspace(25, 25, 10)
-    y_traj = np.linspace(4.75, 20, 10)
-    ax.plot(x_traj, y_traj, "o--", color="gray", label="Ball Trajectory (placeholder)")
-
-    ax.set_aspect("equal")
-    ax.axis("off")
-    ax.legend()
-    st.pyplot(fig)
-
-# --------------------------------------
-# 2️⃣ SIDE VIEW (Backboard, Rim, Net)
-# --------------------------------------
-with tab2:
-    fig2, ax2 = plt.subplots(figsize=(10, 5))
-    ax2.set_xlim(0, 30)
-    ax2.set_ylim(0, 15)
-
-    # Court baseline
-    ax2.plot([0, 30], [0, 0], color="black", lw=3)
-
-    # Backboard (vertical)
-    backboard_x = 25
-    backboard_bottom = 9
-    backboard_top = 13
-    ax2.plot([backboard_x, backboard_x], [backboard_bottom, backboard_top], color="black", lw=4)
-
-    # Rim (horizontal, slightly in front of backboard)
-    rim_front = backboard_x - 1.5
-    rim_back = backboard_x
-    rim_height = 10
-    ax2.plot([rim_front, rim_back], [rim_height, rim_height], color="red", lw=4, zorder=3)
-
-    # Net (dotted trapezoid)
-    net_bottom_y = 8.5
-    net_x_left = rim_front
-    net_x_right = rim_back
-    ax2.plot(
-        [net_x_left, net_x_right],
-        [rim_height, rim_height],
-        color="red",
-        lw=3,
-        zorder=3,
-    )
-    ax2.plot(
-        [net_x_left, net_x_left + 0.4],
-        [rim_height, net_bottom_y],
-        linestyle="dotted",
-        color="blue",
-        lw=2,
-        zorder=2,
-    )
-    ax2.plot(
-        [net_x_right, net_x_right - 0.4],
-        [rim_height, net_bottom_y],
-        linestyle="dotted",
-        color="blue",
-        lw=2,
-        zorder=2,
-    )
-    ax2.plot(
-        [net_x_left + 0.4, net_x_right - 0.4],
-        [net_bottom_y, net_bottom_y],
-        linestyle="dotted",
-        color="blue",
-        lw=2,
-        zorder=2,
-    )
-
-    # Labels
-    ax2.text(15, 14, "Side View", fontsize=14, fontweight="bold")
-    ax2.axis("off")
-    st.pyplot(fig2)
-
-# --------------------------------------
-# 3️⃣ EXPORT FUNCTIONALITY
-# --------------------------------------
-# Example dummy data (replace with actual data later)
-shot_data = pd.DataFrame({
-    "Shot #": [1, 2, 3, 4],
-    "Make/Miss": ["Make", "Miss", "Make", "Miss"],
-    "X_Pos": [23, 26, 24, 27],
-    "Y_Pos": [10, 12, 14, 11]
-})
-
-component_averages = pd.DataFrame({
-    "Component": ["Arc Height", "Release Angle", "Shot Speed"],
-    "Average": [45.2, 51.8, 23.5]
-})
-
-game_make_rate = pd.DataFrame({
-    "Total Shots": [4],
-    "Makes": [2],
-    "Misses": [2],
-    "Make %": [50.0]
-})
-
-# Export logic
 if export_option == "Shot Data":
     data_to_export = shot_data
 elif export_option == "Component Averages":
@@ -183,40 +268,48 @@ elif export_option == "Component Averages":
 else:
     data_to_export = game_make_rate
 
-# Export button
-if st.sidebar.button("Export Data"):
+if st.button("Export"):
     if export_format == "CSV":
         csv = data_to_export.to_csv(index=False).encode("utf-8")
-        st.sidebar.download_button(
+        st.download_button(
             label="Download CSV",
             data=csv,
             file_name=f"{export_option.replace(' ', '_')}.csv",
             mime="text/csv"
         )
-
     elif export_format == "Excel":
-        excel_buffer = pd.ExcelWriter(f"{export_option.replace(' ', '_')}.xlsx", engine="openpyxl")
-        data_to_export.to_excel(excel_buffer, index=False)
-        excel_buffer.close()
+        with pd.ExcelWriter(f"{export_option.replace(' ', '_')}.xlsx", engine="openpyxl") as writer:
+            data_to_export.to_excel(writer, index=False)
         with open(f"{export_option.replace(' ', '_')}.xlsx", "rb") as f:
-            st.sidebar.download_button(
+            st.download_button(
                 label="Download Excel",
                 data=f,
                 file_name=f"{export_option.replace(' ', '_')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-
     elif export_format == "JSON":
         json_data = data_to_export.to_json(orient="records", indent=4)
-        st.sidebar.download_button(
+        st.download_button(
             label="Download JSON",
             data=json_data,
             file_name=f"{export_option.replace(' ', '_')}.json",
             mime="application/json"
         )
 
+# -----------------------------
+# NOTES
+# -----------------------------
+st.header("Notes")
+st.markdown("""
+- `Backboard`, `Rim`, `Net` columns provide **technical feedback**.
+- `Game Make` column shows if the shot **scores a point** in a real game.
+- Replace placeholder data with actual sensor and camera inputs.
+- Averages and plots update automatically after every new shot.
+""")
+
+
 # --------------------------------------
-# 📝 YOUR NOTES SECTION (untouched)
+# 📝 Dev Notes
 # --------------------------------------
 """
 NOTES:
