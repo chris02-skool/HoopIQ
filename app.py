@@ -254,10 +254,11 @@ col1.plotly_chart(top_fig, use_container_width=True)
 col2.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# 3️⃣ EXPORT FUNCTIONALITY - MULTIPLE SELECTION, SINGLE FILE
+# 3️⃣ EXPORT FUNCTIONALITY (MULTIPLE SELECTIONS)
 # -----------------------------
-st.header("Export Data (Single File)")
+st.header("Export Data")
 
+# Example placeholders
 shot_data = df.copy()
 component_averages = pd.DataFrame(component_avg).reset_index()
 component_averages.columns = ["Component", "Average"]
@@ -268,9 +269,11 @@ game_make_rate = pd.DataFrame({
     "Make %": [df['Game Make'].mean() * 100]
 })
 
+# User selects which data to export (multiple)
 export_options = st.multiselect(
-    "Select Data to Export (can choose multiple):",
-    ["Shot Data", "Component Averages", "Game Make Rate"]
+    "Select Data to Export (multiple allowed):",
+    ["Shot Data", "Component Averages", "Game Make Rate"],
+    default=["Shot Data"]
 )
 
 export_format = st.selectbox(
@@ -278,9 +281,8 @@ export_format = st.selectbox(
     ["CSV", "Excel", "JSON"]
 )
 
-if st.button("Export Selected Data"):
+if st.button("Export"):
     if export_format == "CSV":
-        combined_csv = ""
         for option in export_options:
             if option == "Shot Data":
                 data_to_export = shot_data
@@ -288,19 +290,18 @@ if st.button("Export Selected Data"):
                 data_to_export = component_averages
             elif option == "Game Make Rate":
                 data_to_export = game_make_rate
-            else:
-                continue
-            combined_csv += f"\n--- {option} ---\n"
-            combined_csv += data_to_export.to_csv(index=False)
-        st.download_button(
-            label="Download Combined CSV",
-            data=combined_csv.encode("utf-8"),
-            file_name="Basketball_Data.csv",
-            mime="text/csv"
-        )
+
+            csv = data_to_export.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label=f"Download {option} CSV",
+                data=csv,
+                file_name=f"{option.replace(' ', '_')}.csv",
+                mime="text/csv"
+            )
 
     elif export_format == "Excel":
-        output = BytesIO()
+        import io
+        output = io.BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             for option in export_options:
                 if option == "Shot Data":
@@ -309,15 +310,15 @@ if st.button("Export Selected Data"):
                     data_to_export = component_averages
                 elif option == "Game Make Rate":
                     data_to_export = game_make_rate
-                else:
-                    continue
-                sheet_name = option[:31]
-                data_to_export.to_excel(writer, sheet_name=sheet_name, index=False)
-            writer.save()
+
+                # Write each dataframe to a separate sheet
+                sheet_name = option[:31]  # Excel sheet names max 31 chars
+                data_to_export.to_excel(writer, index=False, sheet_name=sheet_name)
+        output.seek(0)
         st.download_button(
-            label="Download Combined Excel",
-            data=output.getvalue(),
-            file_name="Basketball_Data.xlsx",
+            label="Download Excel",
+            data=output,
+            file_name="Basketball_Shot_Data.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
@@ -330,15 +331,16 @@ if st.button("Export Selected Data"):
                 data_to_export = component_averages
             elif option == "Game Make Rate":
                 data_to_export = game_make_rate
-            else:
-                continue
-            combined_json[option.replace(" ", "_")] = data_to_export.to_dict(orient="records")
+            combined_json[option.replace(' ', '_')] = data_to_export.to_dict(orient="records")
+        import json
+        json_data = json.dumps(combined_json, indent=4)
         st.download_button(
-            label="Download Combined JSON",
-            data=pd.io.json.dumps(combined_json, indent=4),
-            file_name="Basketball_Data.json",
+            label="Download JSON",
+            data=json_data,
+            file_name="Basketball_Shot_Data.json",
             mime="application/json"
         )
+
 
 # -----------------------------
 # NOTES
