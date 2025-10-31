@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import math
 import numpy as np
+from io import BytesIO
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -180,8 +181,8 @@ rim_height = 10
 # Backboard - vertical
 backboard_height = 3.5
 backboard_x = 40
-backboard_bottom_y = rim_height - backboard_height+2.5  # 9
-backboard_top_y = backboard_bottom_y + backboard_height  # 12.5
+backboard_bottom_y = rim_height - backboard_height+2.5
+backboard_top_y = backboard_bottom_y + backboard_height
 
 side_fig.add_shape(
     type="line",
@@ -210,7 +211,7 @@ side_fig.add_shape(
 net_top_width = rim_length
 net_bottom_width = 1
 net_height = 1
-net_offset = 0.2  # net slightly in front of backboard
+net_offset = 0.2
 
 net_top_left_x = rim_x_left - net_offset
 net_top_right_x = rim_x_right - net_offset
@@ -218,7 +219,6 @@ net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
 net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
 net_bottom_y = rim_height - net_height
 
-# Draw trapezoid minus the top line
 side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
                    x1=net_bottom_left_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
@@ -229,17 +229,7 @@ side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
                    x1=net_bottom_right_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
 
-# Layout
-side_fig.update_layout(
-    title="Side View of Ball Trajectory",
-    xaxis_title="Distance from Shooter (ft)",
-    yaxis_title="Height (ft)",
-    xaxis=dict(range=[-5, 45]),
-    yaxis=dict(range=[0, 15]),
-    height=500
-)
-
-# Placeholder ball trajectory
+# Placeholder ball trajectory (side view)
 side_fig.add_trace(go.Scatter(
     x=[0, 10, 20, 30, 40],
     y=[6, 8, 9, 10, 10],
@@ -253,7 +243,7 @@ side_fig.update_layout(
     title="Side View of Ball Trajectory",
     xaxis_title="Distance from Shooter (ft)",
     yaxis_title="Height (ft)",
-    xaxis=dict(range=[-5, 40]),
+    xaxis=dict(range=[-5, 45]),
     yaxis=dict(range=[0, 15]),
     height=500
 )
@@ -264,11 +254,10 @@ col1.plotly_chart(top_fig, use_container_width=True)
 col2.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# 3️⃣ EXPORT FUNCTIONALITY (MULTIPLE SELECTION)
+# 3️⃣ EXPORT FUNCTIONALITY - MULTIPLE SELECTION, SINGLE FILE
 # -----------------------------
-st.header("Export Data")
+st.header("Export Data (Single File)")
 
-# Example placeholders
 shot_data = df.copy()
 component_averages = pd.DataFrame(component_avg).reset_index()
 component_averages.columns = ["Component", "Average"]
@@ -279,53 +268,75 @@ game_make_rate = pd.DataFrame({
     "Make %": [df['Game Make'].mean() * 100]
 })
 
-# User selects which datasets to export (can choose multiple)
 export_options = st.multiselect(
     "Select Data to Export (can choose multiple):",
     ["Shot Data", "Component Averages", "Game Make Rate"]
 )
 
-# User selects export format
 export_format = st.selectbox(
     "Select Export Format:",
     ["CSV", "Excel", "JSON"]
 )
 
-# Generate download buttons for each selected dataset
-for option in export_options:
-    if option == "Shot Data":
-        data_to_export = shot_data
-    elif option == "Component Averages":
-        data_to_export = component_averages
-    elif option == "Game Make Rate":
-        data_to_export = game_make_rate
-    else:
-        continue  # safety
-
+if st.button("Export Selected Data"):
     if export_format == "CSV":
-        csv = data_to_export.to_csv(index=False).encode("utf-8")
+        combined_csv = ""
+        for option in export_options:
+            if option == "Shot Data":
+                data_to_export = shot_data
+            elif option == "Component Averages":
+                data_to_export = component_averages
+            elif option == "Game Make Rate":
+                data_to_export = game_make_rate
+            else:
+                continue
+            combined_csv += f"\n--- {option} ---\n"
+            combined_csv += data_to_export.to_csv(index=False)
         st.download_button(
-            label=f"Download {option} as CSV",
-            data=csv,
-            file_name=f"{option.replace(' ', '_')}.csv",
+            label="Download Combined CSV",
+            data=combined_csv.encode("utf-8"),
+            file_name="Basketball_Data.csv",
             mime="text/csv"
         )
+
     elif export_format == "Excel":
-        with pd.ExcelWriter(f"{option.replace(' ', '_')}.xlsx", engine="openpyxl") as writer:
-            data_to_export.to_excel(writer, index=False)
-        with open(f"{option.replace(' ', '_')}.xlsx", "rb") as f:
-            st.download_button(
-                label=f"Download {option} as Excel",
-                data=f,
-                file_name=f"{option.replace(' ', '_')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-    elif export_format == "JSON":
-        json_data = data_to_export.to_json(orient="records", indent=4)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            for option in export_options:
+                if option == "Shot Data":
+                    data_to_export = shot_data
+                elif option == "Component Averages":
+                    data_to_export = component_averages
+                elif option == "Game Make Rate":
+                    data_to_export = game_make_rate
+                else:
+                    continue
+                sheet_name = option[:31]
+                data_to_export.to_excel(writer, sheet_name=sheet_name, index=False)
+            writer.save()
         st.download_button(
-            label=f"Download {option} as JSON",
-            data=json_data,
-            file_name=f"{option.replace(' ', '_')}.json",
+            label="Download Combined Excel",
+            data=output.getvalue(),
+            file_name="Basketball_Data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    elif export_format == "JSON":
+        combined_json = {}
+        for option in export_options:
+            if option == "Shot Data":
+                data_to_export = shot_data
+            elif option == "Component Averages":
+                data_to_export = component_averages
+            elif option == "Game Make Rate":
+                data_to_export = game_make_rate
+            else:
+                continue
+            combined_json[option.replace(" ", "_")] = data_to_export.to_dict(orient="records")
+        st.download_button(
+            label="Download Combined JSON",
+            data=pd.io.json.dumps(combined_json, indent=4),
+            file_name="Basketball_Data.json",
             mime="application/json"
         )
 
@@ -340,7 +351,6 @@ st.markdown("""
 - Averages and plots update automatically after every new shot.
 """)
 
-
 # --------------------------------------
 # 📝 Dev Notes
 # --------------------------------------
@@ -352,5 +362,5 @@ NOTES:
 - Rim is now properly horizontal and layered over the net.
 - Net is a dotted trapezoid offset from the backboard.
 - Next Step: Add real ball trajectory data when available.
-- Future: Let users export additional data (e.g., trajectory stats) and multiple selections.
+- Future: Let users export multiple datasets in one file.
 """
