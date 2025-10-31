@@ -356,13 +356,13 @@ st.markdown("""
 # --------------------------------------
 # 📝 Dev Notes
 # --------------------------------------
-"""
-NOTES:
-- Adjusted free throw circle y-position to 19 for realism.
-- 3-point arc now displays correctly with tangent corner lines.
-- Backboard made vertical on the right side.
-- Rim is now properly horizontal and layered over the net.
-- Net is a dotted trapezoid offset from the backboard.
-- Next Step: Add real ball trajectory data when available.
-- Future: Let users export multiple datasets in one file.
-"""
+#
+# NOTES:
+# - Adjusted free throw circle y-position to 19 for realism.
+# - 3-point arc now displays correctly with tangent corner lines.
+# - Backboard made vertical on the right side.
+# - Rim is now properly horizontal and layered over the net.
+# - Net is a dotted trapezoid offset from the backboard.
+# - Next Step: Add real ball trajectory data when available.
+# - Future: Let users export multiple datasets in one file.
+
