@@ -358,11 +358,13 @@ st.markdown("""
 # --------------------------------------
 #
 # NOTES:
-# - Adjusted free throw circle y-position to 19 for realism.
-# - 3-point arc now displays correctly with tangent corner lines.
-# - Backboard made vertical on the right side.
-# - Rim is now properly horizontal and layered over the net.
-# - Net is a dotted trapezoid offset from the backboard.
 # - Next Step: Add real ball trajectory data when available.
 # - Future: Let users export multiple datasets in one file.
-
+# - A button to let the user scan their ball using the camera from tracking codes (will be at top).
+# - Integrate real sensor data for shot results and trajectory.
+# - Add check/tab/selection to show the which shot they want to see (latest, best, worst, custom)
+# - Add a heat map of shot locations on the court to show how good you shot from a certain spot
+# - Add sessions for when the user uses the app multiple times
+# - Add user authentication for multiple users
+# - Add ability to save and load shot data
+# - Add 10 session limit, with the oldest 7 show averages and the latest 3 show individual shot data.
