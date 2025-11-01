@@ -22,6 +22,7 @@ data = {
     "Game Make": [1, 0, 1, 1, 1]
 }
 df = pd.DataFrame(data)
+df.index = df.index + 1 # Start index at 1 for shot number
 
 component_avg = df[['Backboard', 'Rim', 'Net']].mean()
 game_make_avg = df['Game Make'].mean()
