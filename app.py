@@ -369,3 +369,8 @@ st.markdown("""
 # - Add user authentication for multiple users
 # - Add ability to save and load shot data
 # - Add 10 session limit, with the oldest 7 show averages and the latest 3 show individual shot data.
+# - Add ability to compare multiple sessions (Bonus goal)
+# - Add ability to overlay multiple shot trajectories for comparison (Should be implemented since plan was to show multiple shots in one court graph)
+# - Add ability to adjust shot parameters (angle, speed) and see predicted trajectory
+# - Add more detailed technical feedback based on shot data (if possible)
+# - Data should add lines after every shot, so the user can see their progress over time
