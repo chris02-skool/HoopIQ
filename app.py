@@ -37,14 +37,33 @@ st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 # -----------------------------
 st.header("Ball Trajectory")
 
-# User adjustable parameters
-user_x_offset = st.slider("Adjust shooter horizontal position (ft)", -15, 15, 0)
-user_y_distance = st.slider("Adjust shot distance from hoop (ft)", 10, 40, 20)
-user_height = st.slider("Shooter release height (ft)", 5, 8, 6)
+shooter_x = 0  # directly behind free throw
+shooter_y = 22  # approx 3-pt line behind free throw
 
-# Placeholder ball trajectory data
-top_view_x = [user_x_offset, user_x_offset*0.7, user_x_offset*0.3, 0, 0]
-top_view_y = [user_y_distance, 25, 10, 2, 1]
+# Placeholder trajectories (10 shots)
+# Each shot: dict with 'top_x', 'top_y', 'side_x', 'side_y', 'result'
+shots = [
+    # Makes
+    {'top_x':[0, -2, -1, 0], 'top_y':[shooter_y, 17, 10, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
+    {'top_x':[0, 1, 0, 0], 'top_y':[shooter_y, 18, 12, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
+    {'top_x':[0, -1, -0.5, 0], 'top_y':[shooter_y, 19, 13, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
+    {'top_x':[0, 2, 1, 0], 'top_y':[shooter_y, 17.5, 11, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
+    {'top_x':[0, 0, 0, 0], 'top_y':[shooter_y, 18, 12, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
+    # Misses
+    {'top_x':[0, -2, -3, -3], 'top_y':[shooter_y, 17, 12, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 9, 8, 4], 'result':'Miss'},
+    {'top_x':[0, 1, 2, 3], 'top_y':[shooter_y, 18, 13, 7], 'side_x':[0, 10, 20, 25], 'side_y':[6, 9, 8, 5], 'result':'Miss'},
+    {'top_x':[0, -1, -2, -2.5], 'top_y':[shooter_y, 18, 13, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 8, 4], 'result':'Miss'},
+    {'top_x':[0, 2, 3, 3], 'top_y':[shooter_y, 19, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'},
+    {'top_x':[0, 0, 1, 2], 'top_y':[shooter_y, 18, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'}
+]
+
+# Selection box
+shot_names = [f"Shot {i+1} ({s['result']})" for i, s in enumerate(shots)]
+selected_shots = st.multiselect("Select shots to display:", shot_names, default=shot_names)
+
+# Prepare plots
+top_fig = go.Figure()
+side_fig = go.Figure()
 
 # -----------------------------
 # Top View - Correct High School Court with 3-point arc and corner lines
@@ -230,16 +249,34 @@ side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
                    x1=net_bottom_right_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
 
-# Placeholder ball trajectory (side view)
-side_fig.add_trace(go.Scatter(
-    x=[0, 10, 20, 30, 40],
-    y=[6, 8, 9, 10, 10],
-    mode='lines+markers',
-    line=dict(color="blue", width=3),
-    marker=dict(size=8),
-    name="Ball Trajectory"
-))
+# Plot selected shots
+for i, shot in enumerate(shots):
+    if shot_names[i] in selected_shots:
+        color = "green" if shot['result']=="Make" else "red"
+        top_fig.add_trace(go.Scatter(
+            x=shot['top_x'],
+            y=shot['top_y'],
+            mode='lines+markers',
+            line=dict(color=color, width=3),
+            marker=dict(size=6),
+            name=f"Shot {i+1} ({shot['result']})"
+        ))
+        side_fig.add_trace(go.Scatter(
+            x=shot['side_x'],
+            y=shot['side_y'],
+            mode='lines+markers',
+            line=dict(color=color, width=3),
+            marker=dict(size=6),
+            name=f"Shot {i+1} ({shot['result']})"
+        ))
 
+# Layout updates
+top_fig.update_layout(
+    title="Top View of Ball Trajectory",
+    xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
+    yaxis=dict(range=[0, 50]),
+    height=500
+)
 side_fig.update_layout(
     title="Side View of Ball Trajectory",
     xaxis_title="Distance from Shooter (ft)",
