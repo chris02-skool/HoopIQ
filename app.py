@@ -5,7 +5,8 @@ import plotly.graph_objects as go
 import math
 import numpy as np
 from io import BytesIO
-import streamlit.components.v1 as components
+import json
+import io
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -56,37 +57,49 @@ shots = [
 ]
 
 # -----------------------------
-# Shot Selection (Dropdown)
+# Shot Selection (Dropdown) with Select/Clear All
 # -----------------------------
 st.subheader("Select Shot(s) to Display")
 
-# Create dropdown (multiselect)
 shot_labels = [f"Shot {i+1} ({shot['result']})" for i, shot in enumerate(shots)]
-selected_shots = st.multiselect(
+
+# Initialize selected_shots variable
+if 'selected_shots' not in st.session_state:
+    st.session_state.selected_shots = shot_labels.copy()
+
+# Buttons for select all / clear all
+col_buttons1, col_buttons2 = st.columns([1,1])
+with col_buttons1:
+    if st.button("Select All Shots"):
+        st.session_state.selected_shots = shot_labels.copy()
+with col_buttons2:
+    if st.button("Clear All Shots"):
+        st.session_state.selected_shots = []
+
+# Multiselect dropdown
+st.session_state.selected_shots = st.multiselect(
     "Choose which shots to display:",
     options=shot_labels,
-    default=shot_labels  # Show all by default
+    default=st.session_state.selected_shots
 )
 
 # Map selected labels to indices
-selected_shots_idx = [shot_labels.index(s) for s in selected_shots]
+selected_shots_idx = [shot_labels.index(s) for s in st.session_state.selected_shots]
 
 # -----------------------------
-# Court Plots (Side by Side)
+# Build Plots (Top and Side) below dropdown
 # -----------------------------
-col_left, col_right = st.columns(2)
+col1, col2 = st.columns(2)
 
-# --- LEFT: Top View ---
-with col_left:
-    st.subheader("Top View of Ball Trajectory")
-
+with col1:
+    # Top View
     top_fig = go.Figure()
+
     court_width = 50
     court_length = 47
 
     # Court boundaries
-    top_fig.add_shape(type="rect", x0=-court_width/2, y0=0,
-                      x1=court_width/2, y1=court_length,
+    top_fig.add_shape(type="rect", x0=-court_width/2, y0=0, x1=court_width/2, y1=court_length,
                       line=dict(color="gray", width=2))
 
     # Backboard and Rim
@@ -95,31 +108,29 @@ with col_left:
     backboard_width = 6
     backboard_y = rim_y - 0.5
     top_fig.add_shape(type="line", x0=-backboard_width/2, y0=backboard_y,
-                      x1=backboard_width/2, y1=backboard_y,
-                      line=dict(color="black", width=3))
+                      x1=backboard_width/2, y1=backboard_y, line=dict(color="black", width=3))
     rim_diameter = 1.5
     top_fig.add_shape(type="circle", x0=rim_x - rim_diameter/2, y0=rim_y - rim_diameter/2,
                       x1=rim_x + rim_diameter/2, y1=rim_y + rim_diameter/2,
                       line=dict(color="red", width=3))
 
-    # Key
+    # Key / Box
     box_width = 12
     box_length = 19
-    top_fig.add_shape(type="rect", x0=-box_width/2, y0=0,
-                      x1=box_width/2, y1=box_length,
+    top_fig.add_shape(type="rect", x0=-box_width/2, y0=0, x1=box_width/2, y1=box_length,
                       line=dict(color="orange", width=2))
 
     # Free Throw Arc
     free_throw_line_y = 19
     arc_radius = 6
-    theta = [i for i in range(0, 181)]
-    arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
-    arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
+    theta = np.linspace(0, math.pi, 50)
+    arc_x = arc_radius * np.cos(theta)
+    arc_y = free_throw_line_y + arc_radius * np.sin(theta)
     top_fig.add_trace(go.Scatter(x=arc_x, y=arc_y, mode='lines', line=dict(color="orange")))
 
     # 3-Point Arc
     radius_3pt = 19.75
-    x_left = - (court_width/2 - 5.25)
+    x_left = -(court_width/2 - 5.25)
     x_right = (court_width/2 - 5.25)
     theta_left = math.asin(x_left / radius_3pt)
     theta_right = math.asin(x_right / radius_3pt)
@@ -128,34 +139,34 @@ with col_left:
     arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
     top_fig.add_trace(go.Scatter(x=arc3_x, y=arc3_y, mode='lines', line=dict(color="orange", width=2)))
 
-    # Corner lines
+    # 3-Point Corner Lines
     corner_distance = 5.25
     x_left_corner = -court_width/2 + corner_distance
     y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
-    top_fig.add_shape(type="line", x0=x_left_corner, y0=0, x1=x_left_corner, y1=y_left_top, line=dict(color="orange", width=2))
+    top_fig.add_shape(type="line", x0=x_left_corner, y0=0, x1=x_left_corner, y1=y_left_top,
+                      line=dict(color="orange", width=2))
     x_right_corner = court_width/2 - corner_distance
     y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
-    top_fig.add_shape(type="line", x0=x_right_corner, y0=0, x1=x_right_corner, y1=y_right_top, line=dict(color="orange", width=2))
+    top_fig.add_shape(type="line", x0=x_right_corner, y0=0, x1=x_right_corner, y1=y_right_top,
+                      line=dict(color="orange", width=2))
 
     # Plot selected shots
     for i in selected_shots_idx:
         shot = shots[i]
-        color = "green" if shot['result'] == "Make" else "red"
-        top_fig.add_trace(go.Scatter(
-            x=shot['top_x'], y=shot['top_y'],
-            mode='lines+markers', line=dict(color=color, width=3),
-            marker=dict(size=6), name=f"Shot {i+1} ({shot['result']})"
-        ))
+        color = "green" if shot['result']=="Make" else "red"
+        top_fig.add_trace(go.Scatter(x=shot['top_x'], y=shot['top_y'],
+                                     mode='lines+markers', line=dict(color=color, width=3),
+                                     marker=dict(size=6),
+                                     name=f"Shot {i+1} ({shot['result']})"))
 
-    top_fig.update_layout(xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
-                          yaxis=dict(range=[0, 50]), height=500)
+    top_fig.update_layout(title="Top View of Ball Trajectory", xaxis=dict(range=[-25,25], scaleanchor="y", scaleratio=1),
+                          yaxis=dict(range=[0,50]), height=500)
     st.plotly_chart(top_fig, use_container_width=True)
 
-# --- RIGHT: Side View ---
-with col_right:
-    st.subheader("Side View of Ball Trajectory")
-
+with col2:
+    # Side View
     side_fig = go.Figure()
+
     floor_y = 0
     rim_height = 10
     backboard_height = 3.5
@@ -163,9 +174,10 @@ with col_right:
     backboard_bottom_y = rim_height - backboard_height + 2.5
     backboard_top_y = backboard_bottom_y + backboard_height
 
-    # Backboard and Rim
     side_fig.add_shape(type="line", x0=backboard_x, y0=backboard_bottom_y,
                        x1=backboard_x, y1=backboard_top_y, line=dict(color="black", width=3))
+
+    # Rim
     rim_length = 1.5
     rim_offset_from_backboard = 0.5
     rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
@@ -183,31 +195,30 @@ with col_right:
     net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
     net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
     net_bottom_y = rim_height - net_height
-    side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height, x1=net_bottom_left_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
-    side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height, x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
-    side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y, x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
+
+    side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
+                       x1=net_bottom_left_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
+                       x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
+                       x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
 
     # Plot selected shots
     for i in selected_shots_idx:
         shot = shots[i]
-        color = "green" if shot['result'] == "Make" else "red"
-        side_fig.add_trace(go.Scatter(
-            x=shot['side_x'], y=shot['side_y'],
-            mode='lines+markers', line=dict(color=color, width=3),
-            marker=dict(size=6), name=f"Shot {i+1} ({shot['result']})"
-        ))
+        color = "green" if shot['result']=="Make" else "red"
+        side_fig.add_trace(go.Scatter(x=shot['side_x'], y=shot['side_y'],
+                                      mode='lines+markers', line=dict(color=color, width=3),
+                                      marker=dict(size=6),
+                                      name=f"Shot {i+1} ({shot['result']})"))
 
-    side_fig.update_layout(
-        xaxis_title="Distance from Shooter (ft)",
-        yaxis_title="Height (ft)",
-        xaxis=dict(range=[-5, 45]),
-        yaxis=dict(range=[0, 15]),
-        height=500
-    )
+    side_fig.update_layout(title="Side View of Ball Trajectory",
+                           xaxis_title="Distance from Shooter (ft)", yaxis_title="Height (ft)",
+                           xaxis=dict(range=[-5,45]), yaxis=dict(range=[0,15]), height=500)
     st.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# Section 3: Export Functionality
+# Section 3: Export Functionality (unchanged)
 # -----------------------------
 st.header("Export Data")
 
@@ -226,6 +237,7 @@ export_options = st.multiselect(
     ["Shot Data", "Component Averages", "Game Make Rate"],
     default=["Shot Data"]
 )
+
 export_format = st.selectbox("Select Export Format:", ["CSV", "Excel", "JSON"])
 
 if st.button("Export"):
@@ -235,18 +247,14 @@ if st.button("Export"):
                 data_to_export = shot_data
             elif option == "Component Averages":
                 data_to_export = component_averages
-            else:
+            elif option == "Game Make Rate":
                 data_to_export = game_make_rate
+
             csv = data_to_export.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label=f"Download {option} CSV",
-                data=csv,
-                file_name=f"{option.replace(' ', '_')}.csv",
-                mime="text/csv"
-            )
+            st.download_button(label=f"Download {option} CSV", data=csv,
+                               file_name=f"{option.replace(' ','_')}.csv", mime="text/csv")
 
     elif export_format == "Excel":
-        import io
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             for option in export_options:
@@ -254,36 +262,28 @@ if st.button("Export"):
                     data_to_export = shot_data
                 elif option == "Component Averages":
                     data_to_export = component_averages
-                else:
+                elif option == "Game Make Rate":
                     data_to_export = game_make_rate
                 sheet_name = option[:31]
                 data_to_export.to_excel(writer, index=False, sheet_name=sheet_name)
         output.seek(0)
-        st.download_button(
-            label="Download Excel",
-            data=output,
-            file_name="Basketball_Shot_Data.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        st.download_button(label="Download Excel", data=output,
+                           file_name="Basketball_Shot_Data.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     elif export_format == "JSON":
-        import json
         combined_json = {}
         for option in export_options:
             if option == "Shot Data":
                 data_to_export = shot_data
             elif option == "Component Averages":
                 data_to_export = component_averages
-            else:
+            elif option == "Game Make Rate":
                 data_to_export = game_make_rate
-            combined_json[option.replace(' ', '_')] = data_to_export.to_dict(orient="records")
+            combined_json[option.replace(' ','_')] = data_to_export.to_dict(orient="records")
         json_data = json.dumps(combined_json, indent=4)
-        st.download_button(
-            label="Download JSON",
-            data=json_data,
-            file_name="Basketball_Shot_Data.json",
-            mime="application/json"
-        )
+        st.download_button(label="Download JSON", data=json_data,
+                           file_name="Basketball_Shot_Data.json", mime="application/json")
 
 # -----------------------------
 # Notes
@@ -291,10 +291,11 @@ if st.button("Export"):
 st.header("Notes")
 st.markdown("""
 - `Backboard`, `Rim`, `Net` columns provide **technical feedback**.
-- `Game Make` column shows if the shot **scores a point**.
+- `Game Make` column shows if the shot **scores a point** in a real game.
 - Replace placeholder data with actual sensor and camera inputs.
 - Averages and plots update automatically after every new shot.
 """)
+
 
 # --------------------------------------
 # 📝 Dev Notes
