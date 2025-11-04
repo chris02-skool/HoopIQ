@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import math
 import numpy as np
 from io import BytesIO
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -82,14 +83,21 @@ with col_left:
         </style>
         """, unsafe_allow_html=True)
 
-    # Scrollable checkbox list
+    # Create the scrollable container
+    components.html(
+        """
+        <div class="scroll-box" id="scrollBox">
+        </div>
+        """,
+        height=520,
+    )
+
+    # Then render the checkboxes using Streamlit inside the same visual space
     selected_shots_idx = []
-    st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
     for i, shot in enumerate(shots):
         checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
         if checked:
             selected_shots_idx.append(i)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Prepare plots
 top_fig = go.Figure()
