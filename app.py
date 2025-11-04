@@ -57,9 +57,33 @@ shots = [
     {'top_x':[0, 0, 1, 2], 'top_y':[shooter_y, 18, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'}
 ]
 
-# Selection box
-shot_names = [f"Shot {i+1} ({s['result']})" for i, s in enumerate(shots)]
-selected_shots = st.multiselect("Select shots to display:", shot_names, default=shot_names)
+# LEFT PANEL: Scrollable checkbox list
+col_left, col_right = st.columns([1,3])  # Left for checkboxes, right for plots
+
+with col_left:
+    st.subheader("Shots List")
+    # Scrollable div via CSS
+    st.markdown("""
+        <style>
+        .scroll-box {
+            height: 280px;  /* adjust as needed */
+            overflow-y: scroll;
+            border:1px solid #ccc;
+            padding:5px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    selected_shots_idx = []
+    container = st.container()
+    with container:
+        st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
+        for i, shot in enumerate(shots):
+            checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
+            if checked:
+                selected_shots_idx.append(i)
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
 # Prepare plots
 top_fig = go.Figure()
@@ -232,26 +256,26 @@ side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
                    x1=net_bottom_right_x, y1=net_bottom_y,
                    line=dict(color="blue", width=2, dash='dot'))
 
-# Plot selected shots
-for i, shot in enumerate(shots):
-    if shot_names[i] in selected_shots:
-        color = "green" if shot['result']=="Make" else "red"
-        top_fig.add_trace(go.Scatter(
-            x=shot['top_x'],
-            y=shot['top_y'],
-            mode='lines+markers',
-            line=dict(color=color, width=3),
-            marker=dict(size=6),
-            name=f"Shot {i+1} ({shot['result']})"
-        ))
-        side_fig.add_trace(go.Scatter(
-            x=shot['side_x'],
-            y=shot['side_y'],
-            mode='lines+markers',
-            line=dict(color=color, width=3),
-            marker=dict(size=6),
-            name=f"Shot {i+1} ({shot['result']})"
-        ))
+# Plot selected shots based on checkbox selection
+for i in selected_shots_idx:
+    shot = shots[i]
+    color = "green" if shot['result']=="Make" else "red"
+    top_fig.add_trace(go.Scatter(
+        x=shot['top_x'],
+        y=shot['top_y'],
+        mode='lines+markers',
+        line=dict(color=color, width=3),
+        marker=dict(size=6),
+        name=f"Shot {i+1} ({shot['result']})"
+    ))
+    side_fig.add_trace(go.Scatter(
+        x=shot['side_x'],
+        y=shot['side_y'],
+        mode='lines+markers',
+        line=dict(color=color, width=3),
+        marker=dict(size=6),
+        name=f"Shot {i+1} ({shot['result']})"
+    ))
 
 # Layout updates
 top_fig.update_layout(
