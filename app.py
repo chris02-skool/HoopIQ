@@ -23,7 +23,7 @@ data = {
     "Game Make": [1, 0, 1, 1, 1]
 }
 df = pd.DataFrame(data)
-df.index = df.index + 1 # Start index at 1 for shot number
+df.index = df.index + 1  # Start index at 1 for shot number
 
 component_avg = df[['Backboard', 'Rim', 'Net']].mean()
 game_make_avg = df['Game Make'].mean()
@@ -42,7 +42,6 @@ shooter_x = 0  # directly behind free throw
 shooter_y = 22  # approx 3-pt line behind free throw
 
 # Placeholder trajectories (10 shots)
-# Each shot: dict with 'top_x', 'top_y', 'side_x', 'side_y', 'result'
 shots = [
     {'top_x':[0, 1, 0, 0], 'top_y':[shooter_y, 18, 12, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, 2, 1, 0], 'top_y':[shooter_y, 17.5, 11, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
@@ -57,94 +56,58 @@ shots = [
 ]
 
 # -----------------------------
-# Left column (checkbox list) and Right column (plots)
+# Shot Selection (Dropdown)
 # -----------------------------
-col_left, col_right = st.columns([1,3])  # left: list, right: court/plots
+st.subheader("Select Shot(s) to Display")
 
-# LEFT: shot list with a true scrollable box
+# Create dropdown (multiselect)
+shot_labels = [f"Shot {i+1} ({shot['result']})" for i, shot in enumerate(shots)]
+selected_shots = st.multiselect(
+    "Choose which shots to display:",
+    options=shot_labels,
+    default=shot_labels  # Show all by default
+)
+
+# Map selected labels to indices
+selected_shots_idx = [shot_labels.index(s) for s in selected_shots]
+
+# -----------------------------
+# Court Plots (Side by Side)
+# -----------------------------
+col_left, col_right = st.columns(2)
+
+# --- LEFT: Top View ---
 with col_left:
-    st.subheader("Shots List")
+    st.subheader("Top View of Ball Trajectory")
 
-    # Start scrollable div
-    st.markdown("""
-        <div style="
-            max-height: 250px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: #f9f9f9;
-        ">
-    """, unsafe_allow_html=True)
-
-    selected_shots_idx = []
-    for i, shot in enumerate(shots):
-        checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
-        if checked:
-            selected_shots_idx.append(i)
-
-    # End scrollable div
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-
-# RIGHT: build court, plots, then display them in the right column
-with col_right:
-    # Prepare figures
     top_fig = go.Figure()
-    side_fig = go.Figure()
-
-    # -----------------------------
-    # Top View - Court (UNCHANGED)
-    # -----------------------------
     court_width = 50
     court_length = 47
 
     # Court boundaries
-    top_fig.add_shape(
-        type="rect",
-        x0=-court_width/2,
-        y0=0,
-        x1=court_width/2,
-        y1=court_length,
-        line=dict(color="gray", width=2)
-    )
+    top_fig.add_shape(type="rect", x0=-court_width/2, y0=0,
+                      x1=court_width/2, y1=court_length,
+                      line=dict(color="gray", width=2))
 
     # Backboard and Rim
     rim_y = 5.25
     rim_x = 0
     backboard_width = 6
     backboard_y = rim_y - 0.5
-    top_fig.add_shape(
-        type="line",
-        x0=-backboard_width/2,
-        y0=backboard_y,
-        x1=backboard_width/2,
-        y1=backboard_y,
-        line=dict(color="black", width=3)
-    )
-
+    top_fig.add_shape(type="line", x0=-backboard_width/2, y0=backboard_y,
+                      x1=backboard_width/2, y1=backboard_y,
+                      line=dict(color="black", width=3))
     rim_diameter = 1.5
-    top_fig.add_shape(
-        type="circle",
-        x0=rim_x - rim_diameter/2,
-        y0=rim_y - rim_diameter/2,
-        x1=rim_x + rim_diameter/2,
-        y1=rim_y + rim_diameter/2,
-        line=dict(color="red", width=3)
-    )
+    top_fig.add_shape(type="circle", x0=rim_x - rim_diameter/2, y0=rim_y - rim_diameter/2,
+                      x1=rim_x + rim_diameter/2, y1=rim_y + rim_diameter/2,
+                      line=dict(color="red", width=3))
 
-    # Key / Box
+    # Key
     box_width = 12
     box_length = 19
-    top_fig.add_shape(
-        type="rect",
-        x0=-box_width/2,
-        y0=0,
-        x1=box_width/2,
-        y1=box_length,
-        line=dict(color="orange", width=2)
-    )
+    top_fig.add_shape(type="rect", x0=-box_width/2, y0=0,
+                      x1=box_width/2, y1=box_length,
+                      line=dict(color="orange", width=2))
 
     # Free Throw Arc
     free_throw_line_y = 19
@@ -152,12 +115,7 @@ with col_right:
     theta = [i for i in range(0, 181)]
     arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
     arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
-    top_fig.add_trace(go.Scatter(
-        x=arc_x,
-        y=arc_y,
-        mode='lines',
-        line=dict(color="orange")
-    ))
+    top_fig.add_trace(go.Scatter(x=arc_x, y=arc_y, mode='lines', line=dict(color="orange")))
 
     # 3-Point Arc
     radius_3pt = 19.75
@@ -168,140 +126,91 @@ with col_right:
     theta_vals = np.linspace(theta_left, theta_right, 100)
     arc3_x = rim_x + radius_3pt * np.sin(theta_vals)
     arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
-    top_fig.add_trace(go.Scatter(
-        x=arc3_x,
-        y=arc3_y,
-        mode='lines',
-        line=dict(color="orange", width=2)
-    ))
+    top_fig.add_trace(go.Scatter(x=arc3_x, y=arc3_y, mode='lines', line=dict(color="orange", width=2)))
 
-    # 3-Point Corner Lines
+    # Corner lines
     corner_distance = 5.25
     x_left_corner = -court_width/2 + corner_distance
     y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
-    top_fig.add_shape(
-        type="line",
-        x0=x_left_corner,
-        y0=0,
-        x1=x_left_corner,
-        y1=y_left_top,
-        line=dict(color="orange", width=2)
-    )
+    top_fig.add_shape(type="line", x0=x_left_corner, y0=0, x1=x_left_corner, y1=y_left_top, line=dict(color="orange", width=2))
     x_right_corner = court_width/2 - corner_distance
     y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
-    top_fig.add_shape(
-        type="line",
-        x0=x_right_corner,
-        y0=0,
-        x1=x_right_corner,
-        y1=y_right_top,
-        line=dict(color="orange", width=2)
-    )
+    top_fig.add_shape(type="line", x0=x_right_corner, y0=0, x1=x_right_corner, y1=y_right_top, line=dict(color="orange", width=2))
 
-    # -----------------------------
-    # Side View - Backboard, Rim, Net (UNCHANGED)
-    # -----------------------------
+    # Plot selected shots
+    for i in selected_shots_idx:
+        shot = shots[i]
+        color = "green" if shot['result'] == "Make" else "red"
+        top_fig.add_trace(go.Scatter(
+            x=shot['top_x'], y=shot['top_y'],
+            mode='lines+markers', line=dict(color=color, width=3),
+            marker=dict(size=6), name=f"Shot {i+1} ({shot['result']})"
+        ))
+
+    top_fig.update_layout(xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
+                          yaxis=dict(range=[0, 50]), height=500)
+    st.plotly_chart(top_fig, use_container_width=True)
+
+# --- RIGHT: Side View ---
+with col_right:
+    st.subheader("Side View of Ball Trajectory")
+
+    side_fig = go.Figure()
     floor_y = 0
     rim_height = 10
     backboard_height = 3.5
     backboard_x = 40
-    backboard_bottom_y = rim_height - backboard_height+2.5
+    backboard_bottom_y = rim_height - backboard_height + 2.5
     backboard_top_y = backboard_bottom_y + backboard_height
 
-    side_fig.add_shape(
-        type="line",
-        x0=backboard_x,
-        y0=backboard_bottom_y,
-        x1=backboard_x,
-        y1=backboard_top_y,
-        line=dict(color="black", width=3)
-    )
-
-    # Rim - horizontal line in front of backboard
+    # Backboard and Rim
+    side_fig.add_shape(type="line", x0=backboard_x, y0=backboard_bottom_y,
+                       x1=backboard_x, y1=backboard_top_y, line=dict(color="black", width=3))
     rim_length = 1.5
     rim_offset_from_backboard = 0.5
     rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
     rim_x_right = backboard_x - rim_offset_from_backboard + rim_length/2
-    side_fig.add_shape(
-        type="line",
-        x0=rim_x_left,
-        y0=rim_height,
-        x1=rim_x_right,
-        y1=rim_height,
-        line=dict(color="red", width=3)
-    )
+    side_fig.add_shape(type="line", x0=rim_x_left, y0=rim_height,
+                       x1=rim_x_right, y1=rim_height, line=dict(color="red", width=3))
 
-    # Net - dotted trapezoid slightly in front of backboard
+    # Net
     net_top_width = rim_length
     net_bottom_width = 1
     net_height = 1
     net_offset = 0.2
-
     net_top_left_x = rim_x_left - net_offset
     net_top_right_x = rim_x_right - net_offset
     net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
     net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
     net_bottom_y = rim_height - net_height
+    side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height, x1=net_bottom_left_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height, x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y, x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
 
-    side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
-                       x1=net_bottom_left_x, y1=net_bottom_y,
-                       line=dict(color="blue", width=2, dash='dot'))
-    side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
-                       x1=net_bottom_right_x, y1=net_bottom_y,
-                       line=dict(color="blue", width=2, dash='dot'))
-    side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
-                       x1=net_bottom_right_x, y1=net_bottom_y,
-                       line=dict(color="blue", width=2, dash='dot'))
-
-    # -----------------------------
-    # Plot selected shots based on checkbox selection
-    # -----------------------------
+    # Plot selected shots
     for i in selected_shots_idx:
         shot = shots[i]
-        color = "green" if shot['result']=="Make" else "red"
-        top_fig.add_trace(go.Scatter(
-            x=shot['top_x'],
-            y=shot['top_y'],
-            mode='lines+markers',
-            line=dict(color=color, width=3),
-            marker=dict(size=6),
-            name=f"Shot {i+1} ({shot['result']})"
-        ))
+        color = "green" if shot['result'] == "Make" else "red"
         side_fig.add_trace(go.Scatter(
-            x=shot['side_x'],
-            y=shot['side_y'],
-            mode='lines+markers',
-            line=dict(color=color, width=3),
-            marker=dict(size=6),
-            name=f"Shot {i+1} ({shot['result']})"
+            x=shot['side_x'], y=shot['side_y'],
+            mode='lines+markers', line=dict(color=color, width=3),
+            marker=dict(size=6), name=f"Shot {i+1} ({shot['result']})"
         ))
 
-    # Layout updates (unchanged)
-    top_fig.update_layout(
-        title="Top View of Ball Trajectory",
-        xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
-        yaxis=dict(range=[0, 50]),
-        height=500
-    )
     side_fig.update_layout(
-        title="Side View of Ball Trajectory",
         xaxis_title="Distance from Shooter (ft)",
         yaxis_title="Height (ft)",
         xaxis=dict(range=[-5, 45]),
         yaxis=dict(range=[0, 15]),
         height=500
     )
-
-    # Display plots inside the right column
-    st.plotly_chart(top_fig, use_container_width=True)
     st.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# Section 3: EXPORT FUNCTIONALITY (MULTIPLE SELECTIONS)
+# Section 3: Export Functionality
 # -----------------------------
 st.header("Export Data")
 
-# Example placeholders
 shot_data = df.copy()
 component_averages = pd.DataFrame(component_avg).reset_index()
 component_averages.columns = ["Component", "Average"]
@@ -312,17 +221,12 @@ game_make_rate = pd.DataFrame({
     "Make %": [df['Game Make'].mean() * 100]
 })
 
-# User selects which data to export (multiple)
 export_options = st.multiselect(
     "Select Data to Export (multiple allowed):",
     ["Shot Data", "Component Averages", "Game Make Rate"],
     default=["Shot Data"]
 )
-
-export_format = st.selectbox(
-    "Select Export Format:",
-    ["CSV", "Excel", "JSON"]
-)
+export_format = st.selectbox("Select Export Format:", ["CSV", "Excel", "JSON"])
 
 if st.button("Export"):
     if export_format == "CSV":
@@ -331,9 +235,8 @@ if st.button("Export"):
                 data_to_export = shot_data
             elif option == "Component Averages":
                 data_to_export = component_averages
-            elif option == "Game Make Rate":
+            else:
                 data_to_export = game_make_rate
-
             csv = data_to_export.to_csv(index=False).encode("utf-8")
             st.download_button(
                 label=f"Download {option} CSV",
@@ -351,11 +254,9 @@ if st.button("Export"):
                     data_to_export = shot_data
                 elif option == "Component Averages":
                     data_to_export = component_averages
-                elif option == "Game Make Rate":
+                else:
                     data_to_export = game_make_rate
-
-                # Write each dataframe to a separate sheet
-                sheet_name = option[:31]  # Excel sheet names max 31 chars
+                sheet_name = option[:31]
                 data_to_export.to_excel(writer, index=False, sheet_name=sheet_name)
         output.seek(0)
         st.download_button(
@@ -366,16 +267,16 @@ if st.button("Export"):
         )
 
     elif export_format == "JSON":
+        import json
         combined_json = {}
         for option in export_options:
             if option == "Shot Data":
                 data_to_export = shot_data
             elif option == "Component Averages":
                 data_to_export = component_averages
-            elif option == "Game Make Rate":
+            else:
                 data_to_export = game_make_rate
             combined_json[option.replace(' ', '_')] = data_to_export.to_dict(orient="records")
-        import json
         json_data = json.dumps(combined_json, indent=4)
         st.download_button(
             label="Download JSON",
@@ -385,12 +286,12 @@ if st.button("Export"):
         )
 
 # -----------------------------
-# NOTES
+# Notes
 # -----------------------------
 st.header("Notes")
 st.markdown("""
 - `Backboard`, `Rim`, `Net` columns provide **technical feedback**.
-- `Game Make` column shows if the shot **scores a point** in a real game.
+- `Game Make` column shows if the shot **scores a point**.
 - Replace placeholder data with actual sensor and camera inputs.
 - Averages and plots update automatically after every new shot.
 """)
