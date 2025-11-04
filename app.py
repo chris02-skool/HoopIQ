@@ -65,29 +65,31 @@ col_left, col_right = st.columns([1,3])  # left: list, right: court/plots
 with col_left:
     st.subheader("Shots List")
 
-    # Make the left column content scrollable and visually match the plot
+    # Scrollable container styling for left column
     st.markdown("""
         <style>
-        /* target first column's inner container to enforce scroll in that column only */
+        /* Make the left column container scrollable */
         div[data-testid="column"]:first-child > div {
-            height: 500px;               /* matches plot height */
-            overflow-y: auto;            /* enable scrolling */
+            max-height: 220px;            /* show roughly 5 shots at a time */
+            overflow-y: auto;             /* enable vertical scrolling */
             border: 1px solid #ccc;
             border-radius: 8px;
             padding: 10px;
             background-color: #f9f9f9;
         }
         div[data-testid="stVerticalBlock"] > div > label {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         </style>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
+    # Display shot checkboxes (scrollable list)
     selected_shots_idx = []
     for i, shot in enumerate(shots):
         checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
         if checked:
             selected_shots_idx.append(i)
+
 
 # RIGHT: build court, plots, then display them in the right column
 with col_right:
