@@ -56,261 +56,246 @@ shots = [
     {'top_x':[0, 0, 1, 2], 'top_y':[shooter_y, 18, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'}
 ]
 
-# LEFT PANEL: Scrollable checkbox list (aligned with plot height)
-col_left, col_right = st.columns([1,3])  # Left for list, right for plots
+# -----------------------------
+# Left column (checkbox list) and Right column (plots)
+# -----------------------------
+col_left, col_right = st.columns([1,3])  # left: list, right: court/plots
 
+# LEFT: shot list with scrolling (via column CSS)
 with col_left:
     st.subheader("Shots List")
 
-    # Scrollable area styling
+    # Make the left column content scrollable and visually match the plot
     st.markdown("""
         <style>
-        .scroll-box {
-            height: 500px;  /* matches plot height */
-            overflow-y: auto;
-            border: 1px solid #bbb;
+        /* target first column's inner container to enforce scroll in that column only */
+        div[data-testid="column"]:first-child > div {
+            height: 500px;               /* matches plot height */
+            overflow-y: auto;            /* enable scrolling */
+            border: 1px solid #ccc;
             border-radius: 8px;
-            padding: 6px 10px;
+            padding: 10px;
             background-color: #f9f9f9;
         }
-        .scroll-box::-webkit-scrollbar {
-            width: 8px;
-        }
-        .scroll-box::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 4px;
+        div[data-testid="stVerticalBlock"] > div > label {
+            font-size: 0.95rem;
         }
         </style>
         """, unsafe_allow_html=True)
 
-    # Create the scrollable container
-    components.html(
-        """
-        <div class="scroll-box" id="scrollBox">
-        </div>
-        """,
-        height=520,
-    )
-
-    # Then render the checkboxes using Streamlit inside the same visual space
     selected_shots_idx = []
     for i, shot in enumerate(shots):
         checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
         if checked:
             selected_shots_idx.append(i)
 
-# Prepare plots
-top_fig = go.Figure()
-side_fig = go.Figure()
+# RIGHT: build court, plots, then display them in the right column
+with col_right:
+    # Prepare figures
+    top_fig = go.Figure()
+    side_fig = go.Figure()
 
-# -----------------------------
-# Top View - Correct High School Court with 3-point arc and corner lines
-# -----------------------------
-top_fig = go.Figure()
+    # -----------------------------
+    # Top View - Court (UNCHANGED)
+    # -----------------------------
+    court_width = 50
+    court_length = 47
 
-# Court dimensions (ft)
-court_width = 50
-court_length = 47
+    # Court boundaries
+    top_fig.add_shape(
+        type="rect",
+        x0=-court_width/2,
+        y0=0,
+        x1=court_width/2,
+        y1=court_length,
+        line=dict(color="gray", width=2)
+    )
 
-# Court boundaries
-top_fig.add_shape(
-    type="rect",
-    x0=-court_width/2,
-    y0=0,
-    x1=court_width/2,
-    y1=court_length,
-    line=dict(color="gray", width=2)
-)
+    # Backboard and Rim
+    rim_y = 5.25
+    rim_x = 0
+    backboard_width = 6
+    backboard_y = rim_y - 0.5
+    top_fig.add_shape(
+        type="line",
+        x0=-backboard_width/2,
+        y0=backboard_y,
+        x1=backboard_width/2,
+        y1=backboard_y,
+        line=dict(color="black", width=3)
+    )
 
-# Backboard and Rim
-rim_y = 5.25
-rim_x = 0
-backboard_width = 6
-backboard_y = rim_y - 0.5
-top_fig.add_shape(
-    type="line",
-    x0=-backboard_width/2,
-    y0=backboard_y,
-    x1=backboard_width/2,
-    y1=backboard_y,
-    line=dict(color="black", width=3)
-)
+    rim_diameter = 1.5
+    top_fig.add_shape(
+        type="circle",
+        x0=rim_x - rim_diameter/2,
+        y0=rim_y - rim_diameter/2,
+        x1=rim_x + rim_diameter/2,
+        y1=rim_y + rim_diameter/2,
+        line=dict(color="red", width=3)
+    )
 
-rim_diameter = 1.5
-top_fig.add_shape(
-    type="circle",
-    x0=rim_x - rim_diameter/2,
-    y0=rim_y - rim_diameter/2,
-    x1=rim_x + rim_diameter/2,
-    y1=rim_y + rim_diameter/2,
-    line=dict(color="red", width=3)
-)
+    # Key / Box
+    box_width = 12
+    box_length = 19
+    top_fig.add_shape(
+        type="rect",
+        x0=-box_width/2,
+        y0=0,
+        x1=box_width/2,
+        y1=box_length,
+        line=dict(color="orange", width=2)
+    )
 
-# Key / Box
-box_width = 12
-box_length = 19
-top_fig.add_shape(
-    type="rect",
-    x0=-box_width/2,
-    y0=0,
-    x1=box_width/2,
-    y1=box_length,
-    line=dict(color="orange", width=2)
-)
-
-# Free Throw Arc
-free_throw_line_y = 19
-arc_radius = 6
-theta = [i for i in range(0, 181)]
-arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
-arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
-top_fig.add_trace(go.Scatter(
-    x=arc_x,
-    y=arc_y,
-    mode='lines',
-    line=dict(color="orange")
-))
-
-# 3-Point Arc
-radius_3pt = 19.75
-x_left = - (court_width/2 - 5.25)
-x_right = (court_width/2 - 5.25)
-theta_left = math.asin(x_left / radius_3pt)
-theta_right = math.asin(x_right / radius_3pt)
-theta_vals = np.linspace(theta_left, theta_right, 100)
-arc3_x = rim_x + radius_3pt * np.sin(theta_vals)
-arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
-top_fig.add_trace(go.Scatter(
-    x=arc3_x,
-    y=arc3_y,
-    mode='lines',
-    line=dict(color="orange", width=2)
-))
-
-# 3-Point Corner Lines
-corner_distance = 5.25
-x_left_corner = -court_width/2 + corner_distance
-y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
-top_fig.add_shape(
-    type="line",
-    x0=x_left_corner,
-    y0=0,
-    x1=x_left_corner,
-    y1=y_left_top,
-    line=dict(color="orange", width=2)
-)
-x_right_corner = court_width/2 - corner_distance
-y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
-top_fig.add_shape(
-    type="line",
-    x0=x_right_corner,
-    y0=0,
-    x1=x_right_corner,
-    y1=y_right_top,
-    line=dict(color="orange", width=2)
-)
-
-# -----------------------------
-# Side View - Correct Backboard, Rim, Net
-# -----------------------------
-side_fig = go.Figure()
-
-# Rim and court dimensions
-floor_y = 0
-rim_height = 10
-
-# Backboard - vertical
-backboard_height = 3.5
-backboard_x = 40
-backboard_bottom_y = rim_height - backboard_height+2.5
-backboard_top_y = backboard_bottom_y + backboard_height
-
-side_fig.add_shape(
-    type="line",
-    x0=backboard_x,
-    y0=backboard_bottom_y,
-    x1=backboard_x,
-    y1=backboard_top_y,
-    line=dict(color="black", width=3)
-)
-
-# Rim - horizontal line in front of backboard
-rim_length = 1.5
-rim_offset_from_backboard = 0.5
-rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
-rim_x_right = backboard_x - rim_offset_from_backboard + rim_length/2
-side_fig.add_shape(
-    type="line",
-    x0=rim_x_left,
-    y0=rim_height,
-    x1=rim_x_right,
-    y1=rim_height,
-    line=dict(color="red", width=3)
-)
-
-# Net - dotted trapezoid slightly in front of backboard
-net_top_width = rim_length
-net_bottom_width = 1
-net_height = 1
-net_offset = 0.2
-
-net_top_left_x = rim_x_left - net_offset
-net_top_right_x = rim_x_right - net_offset
-net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
-net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
-net_bottom_y = rim_height - net_height
-
-side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
-                   x1=net_bottom_left_x, y1=net_bottom_y,
-                   line=dict(color="blue", width=2, dash='dot'))
-side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
-                   x1=net_bottom_right_x, y1=net_bottom_y,
-                   line=dict(color="blue", width=2, dash='dot'))
-side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
-                   x1=net_bottom_right_x, y1=net_bottom_y,
-                   line=dict(color="blue", width=2, dash='dot'))
-
-# Plot selected shots based on checkbox selection
-for i in selected_shots_idx:
-    shot = shots[i]
-    color = "green" if shot['result']=="Make" else "red"
+    # Free Throw Arc
+    free_throw_line_y = 19
+    arc_radius = 6
+    theta = [i for i in range(0, 181)]
+    arc_x = [arc_radius * math.cos(math.radians(t)) for t in theta]
+    arc_y = [free_throw_line_y + arc_radius * math.sin(math.radians(t)) for t in theta]
     top_fig.add_trace(go.Scatter(
-        x=shot['top_x'],
-        y=shot['top_y'],
-        mode='lines+markers',
-        line=dict(color=color, width=3),
-        marker=dict(size=6),
-        name=f"Shot {i+1} ({shot['result']})"
-    ))
-    side_fig.add_trace(go.Scatter(
-        x=shot['side_x'],
-        y=shot['side_y'],
-        mode='lines+markers',
-        line=dict(color=color, width=3),
-        marker=dict(size=6),
-        name=f"Shot {i+1} ({shot['result']})"
+        x=arc_x,
+        y=arc_y,
+        mode='lines',
+        line=dict(color="orange")
     ))
 
-# Layout updates
-top_fig.update_layout(
-    title="Top View of Ball Trajectory",
-    xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
-    yaxis=dict(range=[0, 50]),
-    height=500
-)
-side_fig.update_layout(
-    title="Side View of Ball Trajectory",
-    xaxis_title="Distance from Shooter (ft)",
-    yaxis_title="Height (ft)",
-    xaxis=dict(range=[-5, 45]),
-    yaxis=dict(range=[0, 15]),
-    height=500
-)
+    # 3-Point Arc
+    radius_3pt = 19.75
+    x_left = - (court_width/2 - 5.25)
+    x_right = (court_width/2 - 5.25)
+    theta_left = math.asin(x_left / radius_3pt)
+    theta_right = math.asin(x_right / radius_3pt)
+    theta_vals = np.linspace(theta_left, theta_right, 100)
+    arc3_x = rim_x + radius_3pt * np.sin(theta_vals)
+    arc3_y = rim_y + radius_3pt * np.cos(theta_vals)
+    top_fig.add_trace(go.Scatter(
+        x=arc3_x,
+        y=arc3_y,
+        mode='lines',
+        line=dict(color="orange", width=2)
+    ))
 
-# Display side by side
-col1, col2 = st.columns(2)
-col1.plotly_chart(top_fig, use_container_width=True)
-col2.plotly_chart(side_fig, use_container_width=True)
+    # 3-Point Corner Lines
+    corner_distance = 5.25
+    x_left_corner = -court_width/2 + corner_distance
+    y_left_top = rim_y + math.sqrt(radius_3pt**2 - (x_left_corner - rim_x)**2)
+    top_fig.add_shape(
+        type="line",
+        x0=x_left_corner,
+        y0=0,
+        x1=x_left_corner,
+        y1=y_left_top,
+        line=dict(color="orange", width=2)
+    )
+    x_right_corner = court_width/2 - corner_distance
+    y_right_top = rim_y + math.sqrt(radius_3pt**2 - (x_right_corner - rim_x)**2)
+    top_fig.add_shape(
+        type="line",
+        x0=x_right_corner,
+        y0=0,
+        x1=x_right_corner,
+        y1=y_right_top,
+        line=dict(color="orange", width=2)
+    )
+
+    # -----------------------------
+    # Side View - Backboard, Rim, Net (UNCHANGED)
+    # -----------------------------
+    floor_y = 0
+    rim_height = 10
+    backboard_height = 3.5
+    backboard_x = 40
+    backboard_bottom_y = rim_height - backboard_height+2.5
+    backboard_top_y = backboard_bottom_y + backboard_height
+
+    side_fig.add_shape(
+        type="line",
+        x0=backboard_x,
+        y0=backboard_bottom_y,
+        x1=backboard_x,
+        y1=backboard_top_y,
+        line=dict(color="black", width=3)
+    )
+
+    # Rim - horizontal line in front of backboard
+    rim_length = 1.5
+    rim_offset_from_backboard = 0.5
+    rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
+    rim_x_right = backboard_x - rim_offset_from_backboard + rim_length/2
+    side_fig.add_shape(
+        type="line",
+        x0=rim_x_left,
+        y0=rim_height,
+        x1=rim_x_right,
+        y1=rim_height,
+        line=dict(color="red", width=3)
+    )
+
+    # Net - dotted trapezoid slightly in front of backboard
+    net_top_width = rim_length
+    net_bottom_width = 1
+    net_height = 1
+    net_offset = 0.2
+
+    net_top_left_x = rim_x_left - net_offset
+    net_top_right_x = rim_x_right - net_offset
+    net_bottom_left_x = net_top_left_x + (net_top_width - net_bottom_width)/2
+    net_bottom_right_x = net_top_right_x - (net_top_width - net_bottom_width)/2
+    net_bottom_y = rim_height - net_height
+
+    side_fig.add_shape(type="line", x0=net_top_left_x, y0=rim_height,
+                       x1=net_bottom_left_x, y1=net_bottom_y,
+                       line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_top_right_x, y0=rim_height,
+                       x1=net_bottom_right_x, y1=net_bottom_y,
+                       line=dict(color="blue", width=2, dash='dot'))
+    side_fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
+                       x1=net_bottom_right_x, y1=net_bottom_y,
+                       line=dict(color="blue", width=2, dash='dot'))
+
+    # -----------------------------
+    # Plot selected shots based on checkbox selection
+    # -----------------------------
+    for i in selected_shots_idx:
+        shot = shots[i]
+        color = "green" if shot['result']=="Make" else "red"
+        top_fig.add_trace(go.Scatter(
+            x=shot['top_x'],
+            y=shot['top_y'],
+            mode='lines+markers',
+            line=dict(color=color, width=3),
+            marker=dict(size=6),
+            name=f"Shot {i+1} ({shot['result']})"
+        ))
+        side_fig.add_trace(go.Scatter(
+            x=shot['side_x'],
+            y=shot['side_y'],
+            mode='lines+markers',
+            line=dict(color=color, width=3),
+            marker=dict(size=6),
+            name=f"Shot {i+1} ({shot['result']})"
+        ))
+
+    # Layout updates (unchanged)
+    top_fig.update_layout(
+        title="Top View of Ball Trajectory",
+        xaxis=dict(range=[-25, 25], scaleanchor="y", scaleratio=1),
+        yaxis=dict(range=[0, 50]),
+        height=500
+    )
+    side_fig.update_layout(
+        title="Side View of Ball Trajectory",
+        xaxis_title="Distance from Shooter (ft)",
+        yaxis_title="Height (ft)",
+        xaxis=dict(range=[-5, 45]),
+        yaxis=dict(range=[0, 15]),
+        height=500
+    )
+
+    # Display plots inside the right column
+    st.plotly_chart(top_fig, use_container_width=True)
+    st.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
 # Section 3: EXPORT FUNCTIONALITY (MULTIPLE SELECTIONS)
@@ -399,7 +384,6 @@ if st.button("Export"):
             file_name="Basketball_Shot_Data.json",
             mime="application/json"
         )
-
 
 # -----------------------------
 # NOTES
