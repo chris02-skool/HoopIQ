@@ -172,23 +172,6 @@ top_fig.add_shape(
     line=dict(color="orange", width=2)
 )
 
-# Ball trajectory (placeholder)
-top_fig.add_trace(go.Scatter(
-    x=top_view_x,
-    y=top_view_y,
-    mode='lines+markers',
-    line=dict(color="blue", width=3),
-    marker=dict(size=8),
-    name="Ball Trajectory"
-))
-
-top_fig.update_layout(
-    title="Top View of Ball Trajectory",
-    xaxis=dict(range=[-court_width/2, court_width/2], scaleanchor="y", scaleratio=1),
-    yaxis=dict(range=[-5, court_length+5]),
-    height=500
-)
-
 # -----------------------------
 # Side View - Correct Backboard, Rim, Net
 # -----------------------------
