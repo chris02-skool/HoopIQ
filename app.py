@@ -43,16 +43,14 @@ shooter_y = 22  # approx 3-pt line behind free throw
 # Placeholder trajectories (10 shots)
 # Each shot: dict with 'top_x', 'top_y', 'side_x', 'side_y', 'result'
 shots = [
-    # Makes
-    {'top_x':[0, -2, -1, 0], 'top_y':[shooter_y, 17, 10, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, 1, 0, 0], 'top_y':[shooter_y, 18, 12, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
-    {'top_x':[0, -1, -0.5, 0], 'top_y':[shooter_y, 19, 13, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, 2, 1, 0], 'top_y':[shooter_y, 17.5, 11, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, 0, 0, 0], 'top_y':[shooter_y, 18, 12, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
-    # Misses
     {'top_x':[0, -2, -3, -3], 'top_y':[shooter_y, 17, 12, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 9, 8, 4], 'result':'Miss'},
     {'top_x':[0, 1, 2, 3], 'top_y':[shooter_y, 18, 13, 7], 'side_x':[0, 10, 20, 25], 'side_y':[6, 9, 8, 5], 'result':'Miss'},
+    {'top_x':[0, -1, -0.5, 0], 'top_y':[shooter_y, 19, 13, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, -1, -2, -2.5], 'top_y':[shooter_y, 18, 13, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 8, 4], 'result':'Miss'},
+    {'top_x':[0, -2, -1, 0], 'top_y':[shooter_y, 17, 10, 5.25], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 9, 10], 'result':'Make'},
     {'top_x':[0, 2, 3, 3], 'top_y':[shooter_y, 19, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'},
     {'top_x':[0, 0, 1, 2], 'top_y':[shooter_y, 18, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'}
 ]
@@ -77,6 +75,7 @@ with col_left:
     selected_shots_idx = []
     container = st.container()
     with container:
+        # start scroll box
         st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
         for i, shot in enumerate(shots):
             checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
@@ -299,7 +298,7 @@ col1.plotly_chart(top_fig, use_container_width=True)
 col2.plotly_chart(side_fig, use_container_width=True)
 
 # -----------------------------
-# 3️⃣ EXPORT FUNCTIONALITY (MULTIPLE SELECTIONS)
+# Section 3: EXPORT FUNCTIONALITY (MULTIPLE SELECTIONS)
 # -----------------------------
 st.header("Export Data")
 
