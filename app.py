@@ -55,34 +55,41 @@ shots = [
     {'top_x':[0, 0, 1, 2], 'top_y':[shooter_y, 18, 14, 6], 'side_x':[0, 10, 20, 25], 'side_y':[6, 8, 7, 4], 'result':'Miss'}
 ]
 
-# LEFT PANEL: Scrollable checkbox list
-col_left, col_right = st.columns([1,3])  # Left for checkboxes, right for plots
+# LEFT PANEL: Scrollable checkbox list (aligned with plot height)
+col_left, col_right = st.columns([1,3])  # Left for list, right for plots
 
 with col_left:
     st.subheader("Shots List")
-    # Scrollable div via CSS
+
+    # Scrollable area styling
     st.markdown("""
         <style>
         .scroll-box {
-            height: 280px;  /* adjust as needed */
-            overflow-y: scroll;
-            border:1px solid #ccc;
-            padding:5px;
+            height: 500px;  /* matches plot height */
+            overflow-y: auto;
+            border: 1px solid #bbb;
+            border-radius: 8px;
+            padding: 6px 10px;
+            background-color: #f9f9f9;
+        }
+        .scroll-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scroll-box::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
         }
         </style>
         """, unsafe_allow_html=True)
 
+    # Scrollable checkbox list
     selected_shots_idx = []
-    container = st.container()
-    with container:
-        # start scroll box
-        st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
-        for i, shot in enumerate(shots):
-            checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
-            if checked:
-                selected_shots_idx.append(i)
-        st.markdown('</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
+    for i, shot in enumerate(shots):
+        checked = st.checkbox(f"Shot {i+1} ({shot['result']})", value=True, key=f"shot_{i}")
+        if checked:
+            selected_shots_idx.append(i)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Prepare plots
 top_fig = go.Figure()
