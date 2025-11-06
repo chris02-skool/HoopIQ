@@ -44,13 +44,6 @@ def auth_ui():
     if st.session_state.logged_in:
         st.sidebar.success(f"Logged in as {st.session_state.username}")
 
-        # Logout
-        if st.sidebar.button("Logout"):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
-            st.session_state.screen = "login"
-            st.session_state.message = ""
-
         # ---------------------------
         # Change Password
         # ---------------------------
@@ -68,6 +61,13 @@ def auth_ui():
                         st.success("✅ Password updated successfully.")
                     else:
                         st.error("❌ Could not update password.")
+
+        # Logout
+        if st.sidebar.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.screen = "login"
+            st.session_state.message = ""
 
         # ---------------------------
         # Delete Account
