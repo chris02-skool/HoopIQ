@@ -15,7 +15,12 @@ from notes import show_notes
 from auth_utils import login, register, get_user_sessions, add_user_session
 
 # -----------------------------
-# Section 0: User Authentication
+# Streamlit config
+# -----------------------------
+st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
+
+# -----------------------------
+# Session state defaults
 # -----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -23,12 +28,22 @@ if "username" not in st.session_state:
     st.session_state.username = None
 if "screen" not in st.session_state:
     st.session_state.screen = "login"
-if "rerun_flag" not in st.session_state:
-    st.session_state.rerun_flag = False
 
+# -----------------------------
+# Authentication functions
+# -----------------------------
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.username = None
+    st.experimental_rerun()
+
+# -----------------------------
+# Login/Register screens
+# -----------------------------
 if not st.session_state.logged_in:
     if st.session_state.screen == "login":
         st.subheader("Login")
+        st.write("Enter your username and password. If you don't have an account, click Register.")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -41,17 +56,17 @@ if not st.session_state.logged_in:
                     st.session_state.logged_in = True
                     st.session_state.username = username
                     st.success(f"Logged in as {username}")
-                    st.session_state.rerun_flag = True
+                    st.experimental_rerun()
                 else:
                     st.error("Incorrect username or password.")
-
         with col2:
             if st.button("Register"):
                 st.session_state.screen = "register"
-                st.session_state.rerun_flag = True
+                st.experimental_rerun()
 
     elif st.session_state.screen == "register":
         st.subheader("Register")
+        st.write("Create a new account.")
         new_username = st.text_input("Desired Username")
         new_password = st.text_input("Desired Password", type="password")
 
@@ -63,70 +78,52 @@ if not st.session_state.logged_in:
                 elif register(new_username, new_password):
                     st.success("Registration successful! Please login.")
                     st.session_state.screen = "login"
-                    st.session_state.rerun_flag = True
+                    st.experimental_rerun()
                 else:
                     st.error("Username already exists. Choose another.")
-
         with col2:
             if st.button("Back to Login"):
                 st.session_state.screen = "login"
-                st.session_state.rerun_flag = True
-
-    # Rerun safely at the end of the authentication block
-    if st.session_state.rerun_flag:
-        st.session_state.rerun_flag = False
-        st.experimental_rerun()
+                st.experimental_rerun()
+    st.stop()  # Stop rendering the rest until logged in
 
 # -----------------------------
-# Main App (after login)
+# Logged-in Sidebar
 # -----------------------------
-st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
+st.sidebar.success(f"Logged in as {st.session_state.username}")
+if st.sidebar.button("Logout"):
+    logout()
+
+# -----------------------------
+# Main App
+# -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
-# -----------------------------
 # Section 1: Shot Results
-# -----------------------------
 st.header("Shot Results")
 st.dataframe(df)
 st.markdown("**Technical Component Averages:**")
 st.write(component_avg)
 st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 
-# -----------------------------
 # Section 2: Shot Selection
-# -----------------------------
 st.header("Select Shot(s) to Display")
 selected_shots_idx = selected_shots_idx(shots)
 
-# -----------------------------
 # Section 3: Plots
-# -----------------------------
 col1, col2 = st.columns(2)
 with col1:
     plot_top_view(shots, selected_shots_idx)
 with col2:
     plot_side_view(shots, selected_shots_idx)
 
-# -----------------------------
 # Section 4: Export
-# -----------------------------
 st.header("Export Data")
 export_section(df, component_avg)
 
-# -----------------------------
 # Section 5: Notes
-# -----------------------------
 show_notes()
 
-# -----------------------------
-# Optional: Log Out Button
-# -----------------------------
-if st.button("Log Out"):
-    st.session_state.logged_in = False
-    st.session_state.username = None
-    st.session_state.screen = "login"
-    st.session_state.rerun_flag = True
-    st.experimental_rerun()
 
 # --------------------------------------
 # 📝 Dev Notes
