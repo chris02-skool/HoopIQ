@@ -1,55 +1,44 @@
-# User authentification
+# User authentication
 
 import json
 import os
-import re
 
-# Path for users.json in project folder
+# Path for users.json in the same folder as auth_utils.py
 USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
 
-# Ensure JSON file exists
+# Ensure users.json exists
 if not os.path.exists(USERS_FILE):
     with open(USERS_FILE, "w") as f:
         json.dump({}, f)
 
-# Password validation
-def is_valid_password(password):
-    if len(password) < 8:
-        return False
-    if not re.search(r"[A-Z]", password):
-        return False
-    if not re.search(r"[a-z]", password):
-        return False
-    if not re.search(r"[0-9]", password):
-        return False
-    return True
-
-# Load users
 def load_users():
+    """Load users from the JSON file."""
     with open(USERS_FILE, "r") as f:
-        return json.load(f)
+        try:
+            users = json.load(f)
+        except json.JSONDecodeError:
+            users = {}
+    return users
 
-# Save users
 def save_users(users):
+    """Save users dictionary to the JSON file."""
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# Register user
+def login(username, password):
+    """Return True if username/password match."""
+    users = load_users()
+    return username in users and users[username] == password
+
 def register(username, password):
+    """
+    Register a new user.
+    Returns True if registration successful.
+    Returns False if username already exists.
+    """
     users = load_users()
     if username in users:
-        return False, "Username already exists."
-    if not is_valid_password(password):
-        return False, "Password must be ≥8 chars, 1 uppercase, 1 lowercase, 1 number."
+        return False
     users[username] = password
     save_users(users)
-    return True, "Registration successful! Please login."
-
-# Login user
-def login(username, password):
-    users = load_users()
-    if username not in users:
-        return False, "Incorrect username or password."
-    if users[username] != password:
-        return False, "Incorrect username or password."
-    return True, ""
+    return True

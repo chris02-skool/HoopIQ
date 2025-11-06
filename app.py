@@ -19,14 +19,11 @@ from auth_ui import auth_ui
 # -----------------------------
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
-# -----------------------------
-# Run authentication UI
-# -----------------------------
+# Step 1: Render login/register and get login status
 logged_in = auth_ui()
 
-# -----------------------------
-# Stop the rest of the app if not logged in
-# Comment out the following line during development to skip login
+# Step 2: Stop the app if user is not logged in
+# Comment out the following line during development to bypass login
 if not logged_in:
     st.stop()
 

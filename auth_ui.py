@@ -2,14 +2,27 @@
 
 import streamlit as st
 from auth_utils import login, register
+import re
+
+def validate_password(password):
+    """Check if password meets requirements."""
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"\d", password):
+        return False
+    return True
 
 def auth_ui():
     """
-    Handles login, registration, logout.
-    Returns True if logged in, False otherwise.
+    Handles login, registration, and logout.
+    Returns True if the user is logged in, False otherwise.
     """
     # -----------------------------
-    # Initialize session state
+    # Initialize session state variables
     # -----------------------------
     defaults = {
         "logged_in": False,
@@ -26,7 +39,7 @@ def auth_ui():
             st.session_state[key] = value
 
     # -----------------------------
-    # Logged-in state: sidebar
+    # Logged-in state: show sidebar and logout
     # -----------------------------
     if st.session_state.logged_in:
         st.sidebar.success(f"Logged in as {st.session_state.username}")
@@ -42,8 +55,8 @@ def auth_ui():
     # -----------------------------
     if st.session_state.screen == "login":
         st.subheader("Login")
-        st.write("Double-click buttons to proceed due to Streamlit behavior.")
         st.write("Enter your username and password. If you don't have an account, click Register.")
+        st.write("**Note:** You may need to double-click buttons due to Streamlit behavior.")
 
         st.session_state.login_username = st.text_input(
             "Username", value=st.session_state.login_username
@@ -62,19 +75,17 @@ def auth_ui():
             username = st.session_state.login_username.strip()
             password = st.session_state.login_password.strip()
             if username == "" or password == "":
-                st.warning("Username and password cannot be empty.")
+                st.warning("⚠️ Username and password cannot be empty.")
+            elif login(username, password):
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.login_username = ""
+                st.session_state.login_password = ""
+                st.success(f"✅ Logged in as {username}")
             else:
-                success, message = login(username, password)
-                if success:
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.session_state.login_username = ""
-                    st.session_state.login_password = ""
-                    st.success(f"Logged in as {username}")
-                else:
-                    st.session_state.login_username = ""
-                    st.session_state.login_password = ""
-                    st.error(message)
+                st.session_state.login_username = ""
+                st.session_state.login_password = ""
+                st.error("❌ Incorrect username or password.")
 
         if register_clicked:
             st.session_state.screen = "register"
@@ -85,8 +96,11 @@ def auth_ui():
     # -----------------------------
     elif st.session_state.screen == "register":
         st.subheader("Register")
-        st.write("Double-click buttons to proceed due to Streamlit behavior.")
-        st.write("Create a new account.")
+        st.write(
+            "Create a new account. Password must be at least 8 characters long, "
+            "contain at least 1 uppercase, 1 lowercase, and 1 number."
+        )
+        st.write("**Note:** You may need to double-click buttons due to Streamlit behavior.")
 
         st.session_state.register_username = st.text_input(
             "Desired Username", value=st.session_state.register_username
@@ -105,16 +119,16 @@ def auth_ui():
             username = st.session_state.register_username.strip()
             password = st.session_state.register_password.strip()
             if username == "" or password == "":
-                st.warning("Username and password cannot be empty.")
+                st.warning("⚠️ Username and password cannot be empty.")
+            elif not validate_password(password):
+                st.warning("⚠️ Password does not meet requirements.")
+            elif register(username, password):
+                st.success("✅ Registration successful! Please login.")
+                st.session_state.screen = "login"
+                st.session_state.register_username = ""
+                st.session_state.register_password = ""
             else:
-                success, message = register(username, password)
-                if success:
-                    st.success(message)
-                    st.session_state.screen = "login"
-                    st.session_state.register_username = ""
-                    st.session_state.register_password = ""
-                else:
-                    st.error(message)
+                st.error("❌ Username already exists. Choose another.")
 
         if back_clicked:
             st.session_state.screen = "login"
