@@ -2,13 +2,13 @@
 
 import streamlit as st
 from auth_utils import login, register
+import re
 
 def auth_ui():
     """
     Handles login, registration, and logout.
     Returns True if the user is logged in, False otherwise.
     """
-
     # -----------------------------
     # Initialize session state variables
     # -----------------------------
@@ -36,7 +36,6 @@ def auth_ui():
             st.session_state.username = ""
             st.session_state.screen = "login"
             st.session_state.message = ""
-            st.stop()  # Stop immediately to reset UI
         return True
 
     # -----------------------------
@@ -45,6 +44,7 @@ def auth_ui():
     if st.session_state.screen == "login":
         st.subheader("Login")
         st.write("Enter your username and password. If you don't have an account, click Register.")
+        st.info("💡 Tip: You may need to press the button twice to continue (Streamlit quirk).")
 
         st.session_state.login_username = st.text_input(
             "Username", value=st.session_state.login_username
@@ -74,12 +74,10 @@ def auth_ui():
                 st.session_state.login_username = ""
                 st.session_state.login_password = ""
                 st.session_state.message = "Incorrect username or password."
-            st.stop()  # Stop to immediately reflect login attempt
 
         if register_clicked:
             st.session_state.screen = "register"
             st.session_state.message = ""
-            st.stop()  # Stop to immediately switch screen
 
     # -----------------------------
     # Register Screen
@@ -87,6 +85,8 @@ def auth_ui():
     elif st.session_state.screen == "register":
         st.subheader("Register")
         st.write("Create a new account.")
+        st.info("💡 Tip: You may need to press the button twice to continue (Streamlit quirk).")
+        st.info("Password must be at least 8 characters long, with at least 1 uppercase, 1 lowercase, and 1 number.")
 
         st.session_state.register_username = st.text_input(
             "Desired Username", value=st.session_state.register_username
@@ -101,11 +101,25 @@ def auth_ui():
         with col2:
             back_clicked = st.button("Back to Login")
 
+        # Password validation function
+        def is_valid_password(pwd):
+            if len(pwd) < 8:
+                return False
+            if not re.search(r"[A-Z]", pwd):
+                return False
+            if not re.search(r"[a-z]", pwd):
+                return False
+            if not re.search(r"[0-9]", pwd):
+                return False
+            return True
+
         if confirm_clicked:
             username = st.session_state.register_username.strip()
             password = st.session_state.register_password.strip()
             if username == "" or password == "":
                 st.session_state.message = "Username and password cannot be empty."
+            elif not is_valid_password(password):
+                st.session_state.message = "Password does not meet requirements."
             elif register(username, password):
                 st.session_state.screen = "login"
                 st.session_state.register_username = ""
@@ -113,12 +127,10 @@ def auth_ui():
                 st.session_state.message = "Registration successful! Please login."
             else:
                 st.session_state.message = "Username already exists. Choose another."
-            st.stop()  # Stop to reflect registration attempt immediately
 
         if back_clicked:
             st.session_state.screen = "login"
             st.session_state.message = ""
-            st.stop()  # Stop to immediately return to login
 
     # -----------------------------
     # Show message if exists
@@ -126,5 +138,4 @@ def auth_ui():
     if st.session_state.message:
         st.warning(st.session_state.message)
 
-    # Return login status
     return st.session_state.logged_in
