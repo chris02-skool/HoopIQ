@@ -1,7 +1,7 @@
 # The authentication UI for the app
 
 import streamlit as st
-from auth_utils import login, register
+from auth_utils import login, register, delete_user, change_password
 import re
 
 def validate_password(password):
@@ -39,7 +39,7 @@ def auth_ui():
             st.session_state[key] = value
 
     # -----------------------------
-    # Logged-in state: show sidebar and logout
+    # Logged-in state: show sidebar, change password, delete account, and logout
     # -----------------------------
     if st.session_state.logged_in:
         st.sidebar.success(f"Logged in as {st.session_state.username}")
@@ -48,6 +48,43 @@ def auth_ui():
             st.session_state.username = ""
             st.session_state.screen = "login"
             st.session_state.message = ""
+    
+        # Change Password
+        pw_expander = st.sidebar.expander("Change Password")
+        with pw_expander:
+            st.info("Note: You may need to click 'Update Password' twice for Streamlit to process it.")
+            new_pw = st.text_input("New Password", type="password")
+            confirm_pw = st.text_input("Confirm New Password", type="password")
+            if st.sidebar.button("Update Password"):
+                if new_pw != confirm_pw:
+                    st.warning("⚠️ Passwords do not match.")
+                elif not validate_password(new_pw):
+                    st.warning("⚠️ Password does not meet requirements.")
+                else:
+                    if change_password(st.session_state.username, new_pw):
+                        st.success("✅ Password updated successfully.")
+                    else:
+                        st.error("❌ Could not update password.")
+    
+        # Delete Account
+        delete_expander = st.sidebar.expander("Delete Account")
+        with delete_expander:
+            st.warning("⚠️ Deleting your account is permanent!")
+            st.info("Note: You may need to click the button twice for Streamlit to update.")
+            confirm_delete = st.checkbox("I understand and want to delete my account")
+            if st.sidebar.button("Delete Account Permanently"):
+                if confirm_delete:
+                    if delete_user(st.session_state.username):
+                        st.success("✅ Account deleted successfully.")
+                        st.session_state.logged_in = False
+                        st.session_state.username = ""
+                        st.session_state.screen = "login"
+                        st.session_state.message = ""
+                    else:
+                        st.error("❌ Could not delete account.")
+                else:
+                    st.info("Please confirm deletion by checking the box.")
+    
         return True
 
     # -----------------------------

@@ -78,7 +78,7 @@ show_notes()
 # - Integrate real sensor data for shot results and trajectory.
 # - Add a heat map of shot locations on the court to show how good you shot from a certain spot
 # - Add sessions for when the user uses the app multiple times
-# - Add user authentication for multiple users
+# - Add remove account security feature (type remove account to confirm)
 # - Add ability to save and load shot data
 # - Add 10 session limit, with the oldest 7 show averages and the latest 3 show individual shot data.
 # - Add ability to compare multiple sessions (Bonus goal)
