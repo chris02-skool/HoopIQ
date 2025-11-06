@@ -9,26 +9,25 @@ def auth_ui():
     Handles login, registration, and logout.
     Returns True if the user is logged in, False otherwise.
     """
+    # -----------------------------
     # Initialize session state variables
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "username" not in st.session_state:
-        st.session_state.username = ""
-    if "screen" not in st.session_state:
-        st.session_state.screen = "login"
-    if "login_username" not in st.session_state:
-        st.session_state.login_username = ""
-    if "login_password" not in st.session_state:
-        st.session_state.login_password = ""
-    if "register_username" not in st.session_state:
-        st.session_state.register_username = ""
-    if "register_password" not in st.session_state:
-        st.session_state.register_password = ""
-    if "message" not in st.session_state:
-        st.session_state.message = ""
+    # -----------------------------
+    defaults = {
+        "logged_in": False,
+        "username": "",
+        "screen": "login",
+        "login_username": "",
+        "login_password": "",
+        "register_username": "",
+        "register_password": "",
+        "message": "",
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
     # -----------------------------
-    # Logout
+    # Logged-in state: show sidebar and logout
     # -----------------------------
     if st.session_state.logged_in:
         st.sidebar.success(f"Logged in as {st.session_state.username}")
@@ -45,9 +44,13 @@ def auth_ui():
     if st.session_state.screen == "login":
         st.subheader("Login")
         st.write("Enter your username and password. If you don't have an account, click Register.")
-        
-        st.session_state.login_username = st.text_input("Username", value=st.session_state.login_username)
-        st.session_state.login_password = st.text_input("Password", type="password", value=st.session_state.login_password)
+
+        st.session_state.login_username = st.text_input(
+            "Username", value=st.session_state.login_username
+        )
+        st.session_state.login_password = st.text_input(
+            "Password", type="password", value=st.session_state.login_password
+        )
 
         col1, col2 = st.columns(2)
         with col1:
@@ -82,8 +85,12 @@ def auth_ui():
         st.subheader("Register")
         st.write("Create a new account.")
 
-        st.session_state.register_username = st.text_input("Desired Username", value=st.session_state.register_username)
-        st.session_state.register_password = st.text_input("Desired Password", type="password", value=st.session_state.register_password)
+        st.session_state.register_username = st.text_input(
+            "Desired Username", value=st.session_state.register_username
+        )
+        st.session_state.register_password = st.text_input(
+            "Desired Password", type="password", value=st.session_state.register_password
+        )
 
         col1, col2 = st.columns(2)
         with col1:
@@ -108,9 +115,10 @@ def auth_ui():
             st.session_state.screen = "login"
             st.session_state.message = ""
 
+    # -----------------------------
     # Show message if exists
+    # -----------------------------
     if st.session_state.message:
         st.warning(st.session_state.message)
 
-    # Return login status
     return st.session_state.logged_in
