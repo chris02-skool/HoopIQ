@@ -78,12 +78,8 @@ if not st.session_state.logged_in:
         st.experimental_rerun()
 
 # -----------------------------
-# Logged-in Sidebar
+# Main App (after login)
 # -----------------------------
-st.sidebar.success(f"Logged in as {st.session_state.username}")
-if st.sidebar.button("Logout"):
-    logout()
-
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
 
@@ -121,6 +117,16 @@ export_section(df, component_avg)
 # Section 5: Notes
 # -----------------------------
 show_notes()
+
+# -----------------------------
+# Optional: Log Out Button
+# -----------------------------
+if st.button("Log Out"):
+    st.session_state.logged_in = False
+    st.session_state.username = None
+    st.session_state.screen = "login"
+    st.session_state.rerun_flag = True
+    st.experimental_rerun()
 
 # --------------------------------------
 # 📝 Dev Notes
