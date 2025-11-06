@@ -23,16 +23,12 @@ if "username" not in st.session_state:
     st.session_state.username = None
 if "screen" not in st.session_state:
     st.session_state.screen = "login"
-
-def logout():
-    st.session_state.logged_in = False
-    st.session_state.username = None
-    st.experimental_rerun()
+if "rerun_flag" not in st.session_state:
+    st.session_state.rerun_flag = False
 
 if not st.session_state.logged_in:
     if st.session_state.screen == "login":
         st.subheader("Login")
-        st.write("Enter your username and password. If you don't have an account, click Register.")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -45,17 +41,17 @@ if not st.session_state.logged_in:
                     st.session_state.logged_in = True
                     st.session_state.username = username
                     st.success(f"Logged in as {username}")
-                    st.experimental_rerun()
+                    st.session_state.rerun_flag = True
                 else:
                     st.error("Incorrect username or password.")
+
         with col2:
             if st.button("Register"):
                 st.session_state.screen = "register"
-                st.experimental_rerun()
+                st.session_state.rerun_flag = True
 
     elif st.session_state.screen == "register":
         st.subheader("Register")
-        st.write("Create a new account.")
         new_username = st.text_input("Desired Username")
         new_password = st.text_input("Desired Password", type="password")
 
@@ -67,14 +63,19 @@ if not st.session_state.logged_in:
                 elif register(new_username, new_password):
                     st.success("Registration successful! Please login.")
                     st.session_state.screen = "login"
-                    st.experimental_rerun()
+                    st.session_state.rerun_flag = True
                 else:
                     st.error("Username already exists. Choose another.")
+
         with col2:
             if st.button("Back to Login"):
                 st.session_state.screen = "login"
-                st.experimental_rerun()
-    st.stop()  # Stop rendering the rest until logged in
+                st.session_state.rerun_flag = True
+
+    # Rerun safely at the end of the authentication block
+    if st.session_state.rerun_flag:
+        st.session_state.rerun_flag = False
+        st.experimental_rerun()
 
 # -----------------------------
 # Logged-in Sidebar
