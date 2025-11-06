@@ -108,7 +108,7 @@ def plot_side_view(shots, selected_idx):
                    x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
 
     # 3-Point Line Marker
-    three_point_distance = 23.75
+    three_point_distance = backboard_x - 23.75
     fig.add_shape(
         type="line",
         x0=three_point_distance, y0=0,
