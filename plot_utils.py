@@ -83,7 +83,7 @@ def plot_side_view(shots, selected_idx):
 
     # Rim
     rim_length = 1.5
-    rim_offset_from_backboard = 1
+    rim_offset_from_backboard = 0.5
     rim_x_left = backboard_x - rim_offset_from_backboard - rim_length/2
     rim_x_right = backboard_x - rim_offset_from_backboard + rim_length/2
     fig.add_shape(type="line", x0=rim_x_left, y0=rim_height,
