@@ -60,7 +60,6 @@ show_notes()
 # - Future: Let users export multiple datasets in one file.
 # - A button to let the user scan their ball using the camera from tracking codes (will be at top).
 # - Integrate real sensor data for shot results and trajectory.
-# - Add check/tab/selection to show the which shot they want to see (latest, best, worst, custom)
 # - Add a heat map of shot locations on the court to show how good you shot from a certain spot
 # - Add sessions for when the user uses the app multiple times
 # - Add user authentication for multiple users
