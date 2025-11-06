@@ -1,49 +1,55 @@
 # User authentification
 
-import streamlit as st
 import json
-import hashlib
-from pathlib import Path
+import os
+import re
 
-USER_FILE = Path("users.json")
+# Path for users.json in project folder
+USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
 
-def load_users():
-    if USER_FILE.exists():
-        with open(USER_FILE, "r") as f:
-            return json.load(f)
-    else:
-        return {"users": {}}
+# Ensure JSON file exists
+if not os.path.exists(USERS_FILE):
+    with open(USERS_FILE, "w") as f:
+        json.dump({}, f)
 
-def save_users(users):
-    with open(USER_FILE, "w") as f:
-        json.dump(users, f, indent=4)
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def login(username, password):
-    users = load_users()
-    if username in users["users"]:
-        return users["users"][username]["password_hash"] == hash_password(password)
-    return False
-
-def register(username, password):
-    users = load_users()
-    if username in users["users"]:
-        return False  # User exists
-    users["users"][username] = {"password_hash": hash_password(password), "sessions": []}
-    save_users(users)
+# Password validation
+def is_valid_password(password):
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"[0-9]", password):
+        return False
     return True
 
-def get_user_sessions(username):
-    users = load_users()
-    return users["users"][username]["sessions"]
+# Load users
+def load_users():
+    with open(USERS_FILE, "r") as f:
+        return json.load(f)
 
-def add_user_session(username, session_data):
+# Save users
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=4)
+
+# Register user
+def register(username, password):
     users = load_users()
-    sessions = users["users"][username]["sessions"]
-    sessions.insert(0, session_data)  # Newest first
-    if len(sessions) > 10:             # Keep max 10 sessions
-        sessions = sessions[:10]
-    users["users"][username]["sessions"] = sessions
+    if username in users:
+        return False, "Username already exists."
+    if not is_valid_password(password):
+        return False, "Password must be ≥8 chars, 1 uppercase, 1 lowercase, 1 number."
+    users[username] = password
     save_users(users)
+    return True, "Registration successful! Please login."
+
+# Login user
+def login(username, password):
+    users = load_users()
+    if username not in users:
+        return False, "Incorrect username or password."
+    if users[username] != password:
+        return False, "Incorrect username or password."
+    return True, ""

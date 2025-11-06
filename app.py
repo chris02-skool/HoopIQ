@@ -12,7 +12,7 @@ from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
-from auth_ui import auth_ui  # Authentication UI module
+from auth_ui import auth_ui
 
 # -----------------------------
 # Streamlit config
@@ -22,13 +22,13 @@ st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 # -----------------------------
 # Run authentication UI
 # -----------------------------
-# Step 1: Render login/register and get login status
 logged_in = auth_ui()
 
-# Step 2: Stop the app if user is not logged in
-# Comment out the following line during development to bypass login
+# -----------------------------
+# Stop the rest of the app if not logged in
+# Comment out the following line during development to skip login
 if not logged_in:
-    st.stop()  
+    st.stop()
 
 # -----------------------------
 # Main App (only for logged-in users)
