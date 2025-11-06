@@ -43,8 +43,7 @@ if "register_password" not in st.session_state:
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = None
-    st.session_state.screen = "login"
-    st.experimental_rerun()
+    st.experimental_rerun()  # immediately rerun to show login screen
 
 # -----------------------------
 # Authentication UI
@@ -58,10 +57,7 @@ if not st.session_state.logged_in:
         st.session_state.login_password = st.text_input("Password", st.session_state.login_password, type="password")
 
         col1, col2 = st.columns(2)
-        login_clicked = col1.button("Login")
-        register_clicked = col2.button("Register")
-
-        if login_clicked:
+        if col1.button("Login"):
             username = st.session_state.login_username
             password = st.session_state.login_password
             if username.strip() == "" or password.strip() == "":
@@ -69,13 +65,13 @@ if not st.session_state.logged_in:
             elif login(username, password):
                 st.session_state.logged_in = True
                 st.session_state.username = username
-                st.success(f"Logged in as {username}")
                 st.session_state.login_username = ""
                 st.session_state.login_password = ""
+                st.experimental_rerun()  # rerun after successful login
             else:
                 st.error("Incorrect username or password.")
 
-        if register_clicked:
+        if col2.button("Register"):
             st.session_state.screen = "register"
             st.experimental_rerun()
 
@@ -87,10 +83,7 @@ if not st.session_state.logged_in:
         st.session_state.register_password = st.text_input("Desired Password", st.session_state.register_password, type="password")
 
         col1, col2 = st.columns(2)
-        confirm_clicked = col1.button("Confirm Registration")
-        back_clicked = col2.button("Back to Login")
-
-        if confirm_clicked:
+        if col1.button("Confirm Registration"):
             username = st.session_state.register_username
             password = st.session_state.register_password
             if username.strip() == "" or password.strip() == "":
@@ -100,14 +93,15 @@ if not st.session_state.logged_in:
                 st.session_state.screen = "login"
                 st.session_state.register_username = ""
                 st.session_state.register_password = ""
+                st.experimental_rerun()  # show login screen after registration
             else:
                 st.error("Username already exists. Choose another.")
 
-        if back_clicked:
+        if col2.button("Back to Login"):
             st.session_state.screen = "login"
             st.experimental_rerun()
 
-    st.stop()  # Stop rendering the main app until logged in
+    st.stop()  # stop rendering the main app until logged in
 
 # -----------------------------
 # Logged-in Sidebar
