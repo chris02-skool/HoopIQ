@@ -107,6 +107,24 @@ def plot_side_view(shots, selected_idx):
     fig.add_shape(type="line", x0=net_bottom_left_x, y0=net_bottom_y,
                    x1=net_bottom_right_x, y1=net_bottom_y, line=dict(color="blue", width=2, dash='dot'))
 
+    # 3-Point Line Marker
+    three_point_distance = 23.75
+    fig.add_shape(
+        type="line",
+        x0=three_point_distance, y0=0,
+        x1=three_point_distance, y1=15,
+        line=dict(color="purple", width=2, dash="dash"),
+    )
+    fig.add_annotation(
+        x=three_point_distance, y=15,
+        text="3-Point Line",
+        showarrow=False,
+        yshift=10,
+        font=dict(color="purple")
+    )
+
+
+    # Plot selected shot
     for i in selected_idx:
         shot = shots[i]
         color = "green" if shot['result']=="Make" else "red"
