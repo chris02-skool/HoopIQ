@@ -5,6 +5,7 @@
 # Start Web Development Date: October 2025
 # Finished Web Development Date: June 2026 (Ideally)
  
+
 import streamlit as st
 from data import df, shots, component_avg, game_make_avg
 from shot_selection import selected_shots_idx
@@ -13,36 +14,74 @@ from export_utils import export_section
 from notes import show_notes
 from auth_utils import login, register, get_user_sessions, add_user_session
 
-#-----------------------------
+# -----------------------------
 # Section 0: User Authentication
-#-----------------------------
+# -----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = None
+if "screen" not in st.session_state:
+    st.session_state.screen = "login"
+
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.username = None
+    st.experimental_rerun()
 
 if not st.session_state.logged_in:
-    st.subheader("Login or Register")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    if st.session_state.screen == "login":
+        st.subheader("Login")
+        st.write("Enter your username and password. If you don't have an account, click Register.")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Login"):
-            if login(username, password):
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.success(f"Logged in as {username}")
-            else:
-                st.error("Incorrect username or password")
-    with col2:
-        if st.button("Register"):
-            if register(username, password):
-                st.success("User registered! You can now login.")
-            else:
-                st.error("Username already exists")
-    st.stop()  # Stop rendering the rest of the app until logged in
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Login"):
+                if username.strip() == "" or password.strip() == "":
+                    st.warning("Username and password cannot be empty.")
+                elif login(username, password):
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.success(f"Logged in as {username}")
+                    st.experimental_rerun()
+                else:
+                    st.error("Incorrect username or password.")
+        with col2:
+            if st.button("Register"):
+                st.session_state.screen = "register"
+                st.experimental_rerun()
 
+    elif st.session_state.screen == "register":
+        st.subheader("Register")
+        st.write("Create a new account.")
+        new_username = st.text_input("Desired Username")
+        new_password = st.text_input("Desired Password", type="password")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Confirm Registration"):
+                if new_username.strip() == "" or new_password.strip() == "":
+                    st.warning("Username and password cannot be empty.")
+                elif register(new_username, new_password):
+                    st.success("Registration successful! Please login.")
+                    st.session_state.screen = "login"
+                    st.experimental_rerun()
+                else:
+                    st.error("Username already exists. Choose another.")
+        with col2:
+            if st.button("Back to Login"):
+                st.session_state.screen = "login"
+                st.experimental_rerun()
+    st.stop()  # Stop rendering the rest until logged in
+
+# -----------------------------
+# Logged-in Sidebar
+# -----------------------------
+st.sidebar.success(f"Logged in as {st.session_state.username}")
+if st.sidebar.button("Logout"):
+    logout()
 
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 st.title("🏀 Basketball Shot Tracker")
@@ -81,7 +120,6 @@ export_section(df, component_avg)
 # Section 5: Notes
 # -----------------------------
 show_notes()
-
 
 # --------------------------------------
 # 📝 Dev Notes
