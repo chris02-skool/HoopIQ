@@ -30,15 +30,14 @@ if "screen" not in st.session_state:
     st.session_state.screen = "login"
 
 # -----------------------------
-# Authentication functions
+# Logout function
 # -----------------------------
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = None
-    st.experimental_rerun()
 
 # -----------------------------
-# Login/Register screens
+# Authentication UI
 # -----------------------------
 if not st.session_state.logged_in:
     if st.session_state.screen == "login":
@@ -49,20 +48,22 @@ if not st.session_state.logged_in:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Login"):
-                if username.strip() == "" or password.strip() == "":
-                    st.warning("Username and password cannot be empty.")
-                elif login(username, password):
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.success(f"Logged in as {username}")
-                    st.experimental_rerun()
-                else:
-                    st.error("Incorrect username or password.")
+            login_clicked = st.button("Login")
         with col2:
-            if st.button("Register"):
-                st.session_state.screen = "register"
-                st.experimental_rerun()
+            register_clicked = st.button("Register")
+
+        if login_clicked:
+            if username.strip() == "" or password.strip() == "":
+                st.warning("Username and password cannot be empty.")
+            elif login(username, password):
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.success(f"Logged in as {username}")
+            else:
+                st.error("Incorrect username or password.")
+
+        if register_clicked:
+            st.session_state.screen = "register"
 
     elif st.session_state.screen == "register":
         st.subheader("Register")
@@ -72,30 +73,34 @@ if not st.session_state.logged_in:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Confirm Registration"):
-                if new_username.strip() == "" or new_password.strip() == "":
-                    st.warning("Username and password cannot be empty.")
-                elif register(new_username, new_password):
-                    st.success("Registration successful! Please login.")
-                    st.session_state.screen = "login"
-                    st.experimental_rerun()
-                else:
-                    st.error("Username already exists. Choose another.")
+            confirm_clicked = st.button("Confirm Registration")
         with col2:
-            if st.button("Back to Login"):
+            back_clicked = st.button("Back to Login")
+
+        if confirm_clicked:
+            if new_username.strip() == "" or new_password.strip() == "":
+                st.warning("Username and password cannot be empty.")
+            elif register(new_username, new_password):
+                st.success("Registration successful! Please login.")
                 st.session_state.screen = "login"
-                st.experimental_rerun()
-    st.stop()  # Stop rendering the rest until logged in
+            else:
+                st.error("Username already exists. Choose another.")
+
+        if back_clicked:
+            st.session_state.screen = "login"
+
+    st.stop()  # Stop rendering the main app until login
+else:
+    # -----------------------------
+    # Logged-in Sidebar
+    # -----------------------------
+    st.sidebar.success(f"Logged in as {st.session_state.username}")
+    if st.sidebar.button("Logout"):
+        logout()
+        st.experimental_rerun()  # rerun to show login screen
 
 # -----------------------------
-# Logged-in Sidebar
-# -----------------------------
-st.sidebar.success(f"Logged in as {st.session_state.username}")
-if st.sidebar.button("Logout"):
-    logout()
-
-# -----------------------------
-# Main App
+# Main App (only for logged-in users)
 # -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
@@ -123,7 +128,6 @@ export_section(df, component_avg)
 
 # Section 5: Notes
 show_notes()
-
 
 # --------------------------------------
 # 📝 Dev Notes
