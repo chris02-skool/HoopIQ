@@ -1,6 +1,5 @@
 # The authentication UI for the app
 
-# auth_ui.py
 import streamlit as st
 from auth_utils import login, register
 
@@ -9,6 +8,7 @@ def auth_ui():
     Handles login, registration, and logout.
     Returns True if the user is logged in, False otherwise.
     """
+
     # -----------------------------
     # Initialize session state variables
     # -----------------------------
@@ -36,6 +36,7 @@ def auth_ui():
             st.session_state.username = ""
             st.session_state.screen = "login"
             st.session_state.message = ""
+            st.stop()  # Stop immediately to reset UI
         return True
 
     # -----------------------------
@@ -73,10 +74,12 @@ def auth_ui():
                 st.session_state.login_username = ""
                 st.session_state.login_password = ""
                 st.session_state.message = "Incorrect username or password."
+            st.stop()  # Stop to immediately reflect login attempt
 
         if register_clicked:
             st.session_state.screen = "register"
             st.session_state.message = ""
+            st.stop()  # Stop to immediately switch screen
 
     # -----------------------------
     # Register Screen
@@ -110,10 +113,12 @@ def auth_ui():
                 st.session_state.message = "Registration successful! Please login."
             else:
                 st.session_state.message = "Username already exists. Choose another."
+            st.stop()  # Stop to reflect registration attempt immediately
 
         if back_clicked:
             st.session_state.screen = "login"
             st.session_state.message = ""
+            st.stop()  # Stop to immediately return to login
 
     # -----------------------------
     # Show message if exists
@@ -121,4 +126,5 @@ def auth_ui():
     if st.session_state.message:
         st.warning(st.session_state.message)
 
+    # Return login status
     return st.session_state.logged_in
