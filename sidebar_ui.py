@@ -1,19 +1,30 @@
 # Sidebar UI for Basketball Shot Tracker
-# Handles session management and account actions
+# Handles dev mode, session management, and user authentication
 # sidebar_ui.py
 
 import streamlit as st
 import json
 import datetime
-from dev_placeholder import generate_placeholder_sessions  # Only for dev mode
+from auth_ui import auth_ui
+from dev_placeholder import generate_placeholder_sessions  # Only used in dev mode
 
 def sidebar_ui(dev_mode=False):
-    """Handles sidebar UI: sessions + add new session button."""
-    
+    """Handles sidebar UI including login, sessions, and account management."""
+
+    # -----------------------------
+    # Login/Register
+    # -----------------------------
+    if not dev_mode:  # normal users
+        logged_in = auth_ui()
+        if not logged_in:
+            return None, None, None  # No user logged in
+    else:
+        st.sidebar.success(f"Dev Mode Active: {st.session_state.username}")
+
     username = st.session_state.username
 
     # -----------------------------
-    # Filenames for session storage
+    # Filenames for user sessions
     # -----------------------------
     newest_file = f"{username}_newest_3_sessions.json"
     oldest_file = f"{username}_oldest_7_sessions.json"
@@ -31,12 +42,13 @@ def sidebar_ui(dev_mode=False):
     except FileNotFoundError:
         oldest_sessions = []
 
-    # -----------------------------
-    # Dev mode: generate placeholder sessions if empty
-    # -----------------------------
+    # Dev mode: placeholder sessions
     if dev_mode and not newest_sessions and not oldest_sessions:
         newest_sessions, oldest_sessions = generate_placeholder_sessions()
 
+    # -----------------------------
+    # Sidebar: Sessions
+    # -----------------------------
     st.sidebar.header("📊 Sessions")
 
     # Add new session button
@@ -48,7 +60,7 @@ def sidebar_ui(dev_mode=False):
             "game_make_avg": 0.0
         }
 
-        # Shift newest -> oldest
+        # Shift sessions: move oldest newest session to oldest 7
         if newest_sessions:
             session_to_oldest = newest_sessions.pop(-1)
             avg_only = {
@@ -58,7 +70,7 @@ def sidebar_ui(dev_mode=False):
             }
             oldest_sessions.append(avg_only)
             if len(oldest_sessions) > 7:
-                oldest_sessions.pop(0)
+                oldest_sessions.pop(0)  # remove 10th oldest
 
         newest_sessions.insert(0, new_session)
 
@@ -69,7 +81,7 @@ def sidebar_ui(dev_mode=False):
             json.dump(oldest_sessions, f, indent=4)
 
     # -----------------------------
-    # Select newest sessions to display
+    # Select newest sessions
     # -----------------------------
     st.sidebar.subheader("View Latest 3 Sessions")
     if newest_sessions:
@@ -83,7 +95,9 @@ def sidebar_ui(dev_mode=False):
         newest_indices = []
 
     # Show oldest sessions
-    show_oldest = st.sidebar.button("Show Oldest 4th-10th Sessions")
-    st.session_state.show_oldest = show_oldest
+    if st.sidebar.button("Show Oldest 4th-10th Sessions"):
+        st.session_state.show_oldest = True
+    else:
+        st.session_state.show_oldest = False
 
     return newest_sessions, oldest_sessions, newest_indices

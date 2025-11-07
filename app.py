@@ -12,7 +12,7 @@ from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
-from sidebar_ui import sidebar_ui
+from sidebar_ui import sidebar_ui 
 
 # -----------------------------
 # Streamlit config
@@ -26,28 +26,19 @@ dev_mode = st.sidebar.checkbox("Enable Dev Mode")
 
 if dev_mode:
     # Dev bypass: temporary username and logged_in
-    st.session_state.username = "dev_user"
+    st.session_state.username = "dev_user"  # acts as a fake user
     st.session_state.logged_in = True
-    from sidebar_ui import sidebar_ui
     newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=True)
 else:
-    # Clear dev login if it was set
-    if st.session_state.get("username") == "dev_user":
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-    
-    from sidebar_ui import sidebar_ui
+    # Normal login flow
     from auth_ui import auth_ui
-
-    if not st.session_state.get("logged_in", False):
-        logged_in = auth_ui()
-        if not logged_in:
-            st.stop()
-
+    logged_in = auth_ui()
+    if not logged_in:
+        st.stop()
     newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=False)
 
 # -----------------------------
-# Main App
+# Main App (only for logged-in users)
 # -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
