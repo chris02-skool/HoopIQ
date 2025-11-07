@@ -44,16 +44,18 @@ st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 # Section 2: Shot Selection
 # -----------------------------
 st.header("Select Shot(s) to Display")
-selected_shots_idx = selected_shots_idx(shots)
+selected_idx = selected_shots_idx(shots)
 
 # -----------------------------
 # Section 3: Plots
 # -----------------------------
 col1, col2 = st.columns(2)
 with col1:
-    plot_top_view(shots, selected_shots_idx)
+    # guard: ensure selected_idx is a list of valid indices
+    safe_selected_idx = [i for i in selected_idx if isinstance(i, int) and 0 <= i < len(shots)]
+    plot_top_view(shots, safe_selected_idx)
 with col2:
-    plot_side_view(shots, selected_shots_idx)
+    plot_side_view(shots, safe_selected_idx)
 
 # -----------------------------
 # Section 4: Export
