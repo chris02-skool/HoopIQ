@@ -6,36 +6,67 @@
 # Finished Web Development Date: June 2026 (Ideally)
 # app.py
 
-# app.py
 import streamlit as st
+from data import df, shots, component_avg, game_make_avg
+from shot_selection import selected_shots_idx
+from plot_utils import plot_top_view, plot_side_view
+from export_utils import export_section
+from notes import show_notes
 from auth_ui import auth_ui
 
-# Import main menu (works for dev and real users)
-from main_menu import main_menu
+# -----------------------------
+# Streamlit config
+# -----------------------------
+st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
-def app():
-    st.set_page_config(page_title="Basketball Analyzer", layout="wide")
+# -----------------------------
+# Login
+# -----------------------------
+logged_in = auth_ui()
+if not logged_in:
+    st.stop()
 
-    # -------------------------
-    # Authentication / Dev mode
-    # -------------------------
-    logged_in = auth_ui()  # this handles login, dev mode, register, etc.
+# -----------------------------
+# Main App
+# -----------------------------
+st.title("🏀 Basketball Shot Tracker")
 
-    if logged_in:
-        # Determine username and dev mode
-        username = st.session_state.username
-        dev_mode = username == "dev" and st.session_state.dev_mode_enabled
+# -----------------------------
+# Section 1: Shot Results
+# -----------------------------
+st.header("Shot Results")
+st.dataframe(df)
+st.markdown("**Technical Component Averages:**")
+st.write(component_avg)
+st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 
-        # -------------------------
-        # Show main menu
-        # -------------------------
-        main_menu(username, dev_mode=dev_mode)
-    else:
-        st.info("Please log in or enable Dev Mode to continue.")
+# -----------------------------
+# Section 2: Shot Selection
+# -----------------------------
+st.header("Select Shot(s) to Display")
+selected_idx = selected_shots_idx(shots)
 
-if __name__ == "__main__":
-    app()
+# -----------------------------
+# Section 3: Plots
+# -----------------------------
+col1, col2 = st.columns(2)
+with col1:
+    # guard: ensure selected_idx is a list of valid indices
+    safe_selected_idx = [i for i in selected_idx if isinstance(i, int) and 0 <= i < len(shots)]
+    plot_top_view(shots, safe_selected_idx)
+with col2:
+    plot_side_view(shots, safe_selected_idx)
 
+# -----------------------------
+# Section 4: Export
+# -----------------------------
+st.header("Export Data")
+export_section(df, component_avg)
+
+# -----------------------------
+# Section 5: Notes
+# -----------------------------
+show_notes()
 
 
 # --------------------------------------
