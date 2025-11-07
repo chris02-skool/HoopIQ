@@ -12,7 +12,7 @@ from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
-from sidebar_ui import sidebar_ui
+from sidebar_ui import sidebar_ui 
 
 # -----------------------------
 # Streamlit config
@@ -20,47 +20,94 @@ from sidebar_ui import sidebar_ui
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
 # -----------------------------
-# Dev mode toggle (above login)
+# Dev Mode Checkbox (Above Login)
 # -----------------------------
-dev_mode = st.sidebar.checkbox("🛠️ Dev Mode", value=False)
+dev_mode = st.sidebar.checkbox("Enable Dev Mode")
+
+if dev_mode:
+    # Dev bypass: temporary username and logged_in
+    st.session_state.username = "dev_user"
+    st.session_state.logged_in = True
+    newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=True)
+else:
+    # Normal login flow
+    from auth_ui import auth_ui
+    logged_in = auth_ui()
+    if not logged_in:
+        st.stop()
+    newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=False)
 
 # -----------------------------
-# Sidebar & session handling
-# -----------------------------
-newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=dev_mode)
-
-# Stop app if user is not logged in
-if st.session_state.get("username") is None:
-    st.stop()
-
-# -----------------------------
-# Main App
+# Main App (only for logged-in users)
 # -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
+# -----------------------------
+# Section 0: Session display logic
+# -----------------------------
+if st.session_state.get("show_oldest", False):
+    st.header("📜 Oldest Sessions (4th-10th)")
+    if oldest_sessions:
+        avg_table = []
+        for i, s in enumerate(oldest_sessions):
+            row = {
+                "Session": f"{i+4}",
+                "Date/Time": s.get("datetime", ""),
+                "Backboard Avg": s.get("component_avg", {}).get("Backboard", 0),
+                "Rim Avg": s.get("component_avg", {}).get("Rim", 0),
+                "Net Avg": s.get("component_avg", {}).get("Net", 0),
+                "Game Make %": s.get("game_make_avg", 0)
+            }
+            avg_table.append(row)
+        st.table(avg_table)
+    else:
+        st.info("No oldest sessions available.")
+else:
+    st.header("📊 Newest Sessions")
+    if newest_sessions and newest_indices:
+        for idx in newest_indices:
+            s = newest_sessions[idx]
+            st.subheader(f"Session {idx+1}: {s.get('datetime','')}")
+            st.dataframe(s.get("shot_data", df))
+            st.markdown("**Component Averages:**")
+            st.write(s.get("component_avg", component_avg))
+            st.write(f"**Overall Game Make Rate:** {s.get('game_make_avg', game_make_avg):.2f}")
+    else:
+        st.info("No newest sessions available. Add a new session using 'Scan Ball / Add New Session'.")
+
+# -----------------------------
 # Section 1: Shot Results
+# -----------------------------
 st.header("Shot Results")
 st.dataframe(df)
 st.markdown("**Technical Component Averages:**")
 st.write(component_avg)
 st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 
+# -----------------------------
 # Section 2: Shot Selection
+# -----------------------------
 st.header("Select Shot(s) to Display")
 selected_shots_idx = selected_shots_idx(shots)
 
+# -----------------------------
 # Section 3: Plots
+# -----------------------------
 col1, col2 = st.columns(2)
 with col1:
     plot_top_view(shots, selected_shots_idx)
 with col2:
     plot_side_view(shots, selected_shots_idx)
 
+# -----------------------------
 # Section 4: Export
+# -----------------------------
 st.header("Export Data")
 export_section(df, component_avg)
 
+# -----------------------------
 # Section 5: Notes
+# -----------------------------
 show_notes()
 
 # --------------------------------------
