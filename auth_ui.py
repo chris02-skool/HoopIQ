@@ -48,19 +48,21 @@ def auth_ui():
         # Change Password
         # ---------------------------
         with st.sidebar.expander("Change Password"):
-            st.info("Note: You may need to click 'Update Password' twice for Streamlit to process it.")
-            new_pw = st.text_input("New Password", type="password", key="new_pw")
-            confirm_pw = st.text_input("Confirm New Password", type="password", key="confirm_pw")
-            if st.button("Update Password", key="update_pw_btn"):
-                if new_pw != confirm_pw:
-                    st.warning("⚠️ Passwords do not match.")
-                elif not validate_password(new_pw):
-                    st.warning("⚠️ Password does not meet requirements.")
-                else:
-                    if change_password(st.session_state.username, new_pw):
-                        st.success("✅ Password updated successfully.")
+            with st.form(key="change_pw_form"):
+                st.info("Note: Password must meet requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number")
+                new_pw = st.text_input("New Password", type="password", key="new_pw")
+                confirm_pw = st.text_input("Confirm New Password", type="password", key="confirm_pw")
+                submit_pw = st.form_submit_button("Update Password")
+                if submit_pw:
+                    if new_pw != confirm_pw:
+                        st.warning("⚠️ Passwords do not match.")
+                    elif not validate_password(new_pw):
+                        st.warning("⚠️ Password does not meet requirements.")
                     else:
-                        st.error("❌ Could not update password.")
+                        if change_password(st.session_state.username, new_pw):
+                            st.success("✅ Password updated successfully.")
+                        else:
+                            st.error("❌ Could not update password.")
 
         # Logout
         if st.sidebar.button("Logout"):
@@ -73,23 +75,21 @@ def auth_ui():
         # Delete Account
         # ---------------------------
         with st.sidebar.expander("Delete Account"):
-            st.warning("⚠️ Deleting your account is permanent!")
-            st.info("Note: You may need to click the button twice for Streamlit to update.")
-            confirm_delete = st.checkbox(
-                "I understand and want to delete my account", key="confirm_delete"
-            )
-            if st.button("Delete Account Permanently", key="delete_account_btn"):
-                if confirm_delete:
-                    if delete_user(st.session_state.username):
-                        st.success("✅ Account deleted successfully.")
-                        st.session_state.logged_in = False
-                        st.session_state.username = ""
-                        st.session_state.screen = "login"
-                        st.session_state.message = ""
+            with st.form(key="delete_account_form"):
+                st.warning("⚠️ Deleting your account is permanent!")
+                confirm_delete = st.checkbox("I understand and want to delete my account", key="confirm_delete")
+                submit_delete = st.form_submit_button("Delete Account Permanently")
+                if submit_delete:
+                    if confirm_delete:
+                        if delete_user(st.session_state.username):
+                            st.success("✅ Account deleted successfully.")
+                            st.session_state.logged_in = False
+                            st.session_state.username = ""
+                            st.session_state.screen = "login"
+                        else:
+                            st.error("❌ Could not delete account.")
                     else:
-                        st.error("❌ Could not delete account.")
-                else:
-                    st.info("Please confirm deletion by checking the box.")
+                        st.info("Please confirm deletion by checking the box.")
 
         return True
 
