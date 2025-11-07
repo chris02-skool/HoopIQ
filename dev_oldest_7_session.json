@@ -1,0 +1,65 @@
+[
+  {
+    "session_number": 1,
+    "datetime": "2025-10-31T11:00:00",
+    "Component_Averages": {"Backboard": 0.7, "Rim": 0.6, "Net": 0.5},
+    "Game_Make_Avg": 0.65,
+    "Total_Shots": 10,
+    "Makes": 6,
+    "Misses": 4
+  },
+  {
+    "session_number": 2,
+    "datetime": "2025-10-30T15:30:00",
+    "Component_Averages": {"Backboard": 0.6, "Rim": 0.5, "Net": 0.4},
+    "Game_Make_Avg": 0.55,
+    "Total_Shots": 10,
+    "Makes": 5,
+    "Misses": 5
+  },
+  {
+    "session_number": 3,
+    "datetime": "2025-10-29T10:45:00",
+    "Component_Averages": {"Backboard": 0.8, "Rim": 0.7, "Net": 0.6},
+    "Game_Make_Avg": 0.7,
+    "Total_Shots": 10,
+    "Makes": 7,
+    "Misses": 3
+  },
+  {
+    "session_number": 4,
+    "datetime": "2025-10-28T12:15:00",
+    "Component_Averages": {"Backboard": 0.5, "Rim": 0.6, "Net": 0.5},
+    "Game_Make_Avg": 0.55,
+    "Total_Shots": 10,
+    "Makes": 5,
+    "Misses": 5
+  },
+  {
+    "session_number": 5,
+    "datetime": "2025-10-27T09:00:00",
+    "Component_Averages": {"Backboard": 0.7, "Rim": 0.7, "Net": 0.6},
+    "Game_Make_Avg": 0.7,
+    "Total_Shots": 10,
+    "Makes": 7,
+    "Misses": 3
+  },
+  {
+    "session_number": 6,
+    "datetime": "2025-10-26T16:30:00",
+    "Component_Averages": {"Backboard": 0.6, "Rim": 0.5, "Net": 0.4},
+    "Game_Make_Avg": 0.55,
+    "Total_Shots": 10,
+    "Makes": 5,
+    "Misses": 5
+  },
+  {
+    "session_number": 7,
+    "datetime": "2025-10-25T14:00:00",
+    "Component_Averages": {"Backboard": 0.8, "Rim": 0.7, "Net": 0.6},
+    "Game_Make_Avg": 0.7,
+    "Total_Shots": 10,
+    "Makes": 7,
+    "Misses": 3
+  }
+]

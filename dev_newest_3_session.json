@@ -1,0 +1,86 @@
+[
+  {
+    "session_number": 1,
+    "datetime": "2025-11-07T10:00:00",
+    "df": [
+      {"Backboard": 1, "Rim": 1, "Net": 0, "Game Make": 1},
+      {"Backboard": 0, "Rim": 0, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1},
+      {"Backboard": 1, "Rim": 1, "Net": 0, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 0, "Game Make": 0}
+    ],
+    "shots": [
+      {"top_x":[0,1,0,0], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,2,1,0], "top_y":[22,17.5,11,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,0,0,0], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,-2,-3,-3], "top_y":[22,17,12,6], "side_x":[0,10,20,25], "side_y":[6,9,8,4], "result":"Miss"},
+      {"top_x":[0,1,2,3], "top_y":[22,18,13,7], "side_x":[0,10,20,25], "side_y":[6,9,8,5], "result":"Miss"},
+      {"top_x":[0,-1,-0.5,0], "top_y":[22,19,13,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,-1,-2,-2.5], "top_y":[22,18,13,6], "side_x":[0,10,20,25], "side_y":[6,8,8,4], "result":"Miss"},
+      {"top_x":[0,-2,-1,0], "top_y":[22,17,10,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,2,3,3], "top_y":[22,19,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Miss"},
+      {"top_x":[0,0,1,2], "top_y":[22,18,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Miss"}
+    ]
+  },
+  {
+    "session_number": 2,
+    "datetime": "2025-11-06T14:30:00",
+    "df": [
+      {"Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 1, "Rim": 0, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 0, "Game Make": 1},
+      {"Backboard": 0, "Rim": 0, "Net": 1, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 0}
+    ],
+    "shots": [
+      {"top_x":[0,0,1,2], "top_y":[22,18,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Miss"},
+      {"top_x":[0,1,1,1], "top_y":[22,17,12,6], "side_x":[0,10,20,25], "side_y":[6,7,8,9], "result":"Make"},
+      {"top_x":[0,2,2,2], "top_y":[22,18,13,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Miss"},
+      {"top_x":[0,-1,-1,0], "top_y":[22,19,14,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,0,-1,-2], "top_y":[22,17,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Miss"},
+      {"top_x":[0,1,0,-1], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,0,1,0], "top_y":[22,17,13,6], "side_x":[0,10,20,25], "side_y":[6,9,8,4], "result":"Make"},
+      {"top_x":[0,1,2,3], "top_y":[22,18,13,7], "side_x":[0,10,20,25], "side_y":[6,9,8,5], "result":"Miss"},
+      {"top_x":[0,-1,-2,-3], "top_y":[22,19,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Make"},
+      {"top_x":[0,0,0,0], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Miss"}
+    ]
+  },
+  {
+    "session_number": 3,
+    "datetime": "2025-11-05T09:15:00",
+    "df": [
+      {"Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 0, "Net": 0, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 0, "Game Make": 1},
+      {"Backboard": 0, "Rim": 0, "Net": 1, "Game Make": 0},
+      {"Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1},
+      {"Backboard": 0, "Rim": 1, "Net": 0, "Game Make": 0},
+      {"Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 1}
+    ],
+    "shots": [
+      {"top_x":[0,0,0,0], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,1,1,1], "top_y":[22,19,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Miss"},
+      {"top_x":[0,2,2,3], "top_y":[22,17,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,-1,-1,0], "top_y":[22,18,13,6], "side_x":[0,10,20,25], "side_y":[6,9,8,4], "result":"Miss"},
+      {"top_x":[0,0,1,2], "top_y":[22,19,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Make"},
+      {"top_x":[0,1,0,-1], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Miss"},
+      {"top_x":[0,0,-1,-2], "top_y":[22,17,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Make"},
+      {"top_x":[0,1,2,3], "top_y":[22,18,13,7], "side_x":[0,10,20,25], "side_y":[6,9,8,5], "result":"Miss"},
+      {"top_x":[0,-1,-2,-3], "top_y":[22,19,14,6], "side_x":[0,10,20,25], "side_y":[6,8,7,4], "result":"Make"},
+      {"top_x":[0,0,0,0], "top_y":[22,18,12,5.25], "side_x":[0,10,20,25], "side_y":[6,8,9,10], "result":"Miss"}
+    ]
+  }
+]
