@@ -12,7 +12,7 @@ from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
-from sidebar_ui import sidebar_ui 
+from sidebar_ui import sidebar_ui
 
 # -----------------------------
 # Streamlit config

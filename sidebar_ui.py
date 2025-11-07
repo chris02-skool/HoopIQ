@@ -14,9 +14,13 @@ def sidebar_ui(dev_mode=False):
     # -----------------------------
     # Login/Register
     # -----------------------------
-    logged_in = auth_ui()
-    if not logged_in:
-        return None, None, None  # No user logged in
+    if not dev_mode:
+        logged_in = auth_ui()
+        if not logged_in:
+            return None, None, None  # No user logged in
+    else:
+        # Dev bypass
+        st.session_state.logged_in = True
 
     username = st.session_state.username
     st.sidebar.success(f"Logged in as {username}")
@@ -87,11 +91,11 @@ def sidebar_ui(dev_mode=False):
     selected_newest = st.sidebar.multiselect(
         "Select sessions to display",
         options=[f"{i+1}: {s['datetime']}" for i, s in enumerate(newest_sessions)],
-        default=[f"{i+1}: {newest_sessions[i]['datetime']}" for i in range(len(newest_sessions))]
+        default=[f"{i+1}: {s['datetime']}" for i, s in enumerate(newest_sessions)]
     )
     newest_indices = [int(s.split(":")[0])-1 for s in selected_newest]
 
-    # Show oldest sessions
+    # Show oldest sessions toggle
     if st.sidebar.button("Show Oldest 4th-10th Sessions"):
         st.session_state.show_oldest = True
     else:
