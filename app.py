@@ -20,27 +20,31 @@ from sidebar_ui import sidebar_ui
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
 # -----------------------------
-# Dev Mode Checkbox
+# Dev Mode Checkbox (Above Login)
 # -----------------------------
 dev_mode = st.sidebar.checkbox("Enable Dev Mode")
 
-# -----------------------------
-# Handle login / dev bypass
-# -----------------------------
 if dev_mode:
+    # Dev bypass: temporary username and logged_in
     st.session_state.username = "dev_user"
     st.session_state.logged_in = True
+    from sidebar_ui import sidebar_ui
+    newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=True)
 else:
+    # Clear dev login if it was set
+    if st.session_state.get("username") == "dev_user":
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+    
+    from sidebar_ui import sidebar_ui
     from auth_ui import auth_ui
+
     if not st.session_state.get("logged_in", False):
         logged_in = auth_ui()
         if not logged_in:
             st.stop()
 
-# -----------------------------
-# Sidebar (sessions + account management)
-# -----------------------------
-newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=dev_mode)
+    newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=False)
 
 # -----------------------------
 # Main App

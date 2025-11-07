@@ -2,11 +2,10 @@
 # dev_placeholder.py
 
 from datetime import datetime
-import pandas as pd
-from data import df, shots, component_avg, game_make_avg
 import copy
+from data import df, shots, component_avg, game_make_avg
 
-def generate_placeholder_sessions():
+def generate_placeholder_sessions(username):
     """
     Generate placeholder session data for testing the session sidebar.
     Returns:
@@ -17,9 +16,10 @@ def generate_placeholder_sessions():
     sessions_newest = []
     for i in range(3):
         session = {
-            "name": f"Session {i+1}",
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "df": copy.deepcopy(df),
+            "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "shot_data": copy.deepcopy(df),
+            "component_avg": copy.deepcopy(component_avg),
+            "game_make_avg": game_make_avg,
             "shots": copy.deepcopy(shots)
         }
         sessions_newest.append(session)
@@ -28,10 +28,9 @@ def generate_placeholder_sessions():
     sessions_oldest = []
     for i in range(7):
         session = {
-            "name": f"Session {i+4}",
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "averages": copy.deepcopy(component_avg),
-            "make_rate": game_make_avg
+            "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "component_avg": copy.deepcopy(component_avg),
+            "game_make_avg": game_make_avg
         }
         sessions_oldest.append(session)
 
