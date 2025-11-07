@@ -4,6 +4,7 @@
 # Team Members: Christopher Hong, Alfonso Mejia Vasquez, Gondra Kelly, Matthew Margulies, Carlos Orozco
 # Start Web Development Date: October 2025
 # Finished Web Development Date: June 2026 (Ideally)
+# app.py
 
 import streamlit as st
 from data import df, shots, component_avg, game_make_avg
@@ -11,7 +12,7 @@ from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
-from auth_ui import auth_ui
+from sidebar_ui import sidebar_ui
 
 # -----------------------------
 # Streamlit config
@@ -19,82 +20,89 @@ from auth_ui import auth_ui
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
 # -----------------------------
-# DEV ONLY: quick bypass for testing session features without login
-# Keep this block while developing; remove or guard before production.
+# Sidebar
 # -----------------------------
-if "dev_mode" not in st.session_state:
-    st.session_state.dev_mode = False
-
-with st.sidebar:
-    st.markdown("### Dev / Test Controls")
-    # Toggle dev bypass on/off
-    st.session_state.dev_mode = st.checkbox(
-        "Enable dev bypass (no login)", value=st.session_state.dev_mode
-    )
-    if st.session_state.dev_mode:
-        st.markdown(
-            "<small><em>Dev mode active — using username: <code>dev_user</code>. "
-            "Session files will be written locally as <code>sessions_dev_user_*.json</code>.</em></small>",
-            unsafe_allow_html=True,
-        )
-
-# If dev mode is enabled, set a stable dev username and mark logged_in
-if st.session_state.get("dev_mode", False):
-    st.session_state.username = st.session_state.get("username", "dev_user") or "dev_user"
-    st.session_state.logged_in = True
-    st.session_state.screen = "login"
-# -----------------------------
-# End DEV ONLY block
-# -----------------------------
+# Set dev_mode=True for testing without real login/data
+newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=True)
+if newest_sessions is None:
+    st.stop()  # Not logged in
 
 # -----------------------------
-# Step 1: Render login/register and get login status
-# -----------------------------
-logged_in = auth_ui()
-
-# -----------------------------
-# Step 2: Stop the app if user is not logged in
-if not logged_in:
-    st.stop()
-# -----------------------------
-
-# -----------------------------
-# Main App (only for logged-in users)
+# Main App
 # -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
 # -----------------------------
-# Section 1: Shot Results
+# Section 1: Oldest sessions overview
 # -----------------------------
-st.header("Shot Results")
-st.dataframe(df)
-st.markdown("**Technical Component Averages:**")
-st.write(component_avg)
-st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
+if st.session_state.get("show_oldest", False):
+    st.header("Oldest Sessions (4th-10th)")
+    if oldest_sessions:
+        avg_table = []
+        for i, s in enumerate(oldest_sessions):
+            avg_table.append({
+                "Session": f"{i+4}",  # 4th to 10th
+                "Datetime": s["datetime"],
+                "Backboard": s["component_avg"]["Backboard"],
+                "Rim": s["component_avg"]["Rim"],
+                "Net": s["component_avg"]["Net"],
+                "Game Make %": s["game_make_avg"]
+            })
+        st.table(avg_table)
+    else:
+        st.info("No older sessions yet.")
+else:
+    # -----------------------------
+    # Section 2: Newest sessions full data
+    # -----------------------------
+    st.header("Shot Results / Selected Sessions")
+    combined_shots = []
+    combined_component_avg = {"Backboard":0, "Rim":0, "Net":0}
+    combined_game_make_avg = 0.0
+
+    if newest_sessions:
+        for idx in newest_indices:
+            session = newest_sessions[idx]
+            combined_shots.extend(session.get("shot_data", []))
+            comp = session.get("component_avg", {"Backboard":0, "Rim":0, "Net":0})
+            combined_component_avg["Backboard"] += comp["Backboard"]
+            combined_component_avg["Rim"] += comp["Rim"]
+            combined_component_avg["Net"] += comp["Net"]
+            combined_game_make_avg += session.get("game_make_avg", 0)
+
+        n = len(newest_indices)
+        if n > 0:
+            combined_component_avg = {k:v/n for k,v in combined_component_avg.items()}
+            combined_game_make_avg /= n
+
+    st.dataframe(df)  # Placeholder: real implementation would merge session shot_data
+    st.markdown("**Technical Component Averages:**")
+    st.write(combined_component_avg)
+    st.write(f"**Overall Game Make Rate:** {combined_game_make_avg:.2f}")
+
+    # -----------------------------
+    # Section 3: Shot Selection
+    # -----------------------------
+    st.header("Select Shot(s) to Display")
+    selected_shots_idx(combined_shots)
+
+    # -----------------------------
+    # Section 4: Plots
+    # -----------------------------
+    col1, col2 = st.columns(2)
+    with col1:
+        plot_top_view(combined_shots, list(range(len(combined_shots))))
+    with col2:
+        plot_side_view(combined_shots, list(range(len(combined_shots))))
 
 # -----------------------------
-# Section 2: Shot Selection
-# -----------------------------
-st.header("Select Shot(s) to Display")
-selected_shots_idx = selected_shots_idx(shots)
-
-# -----------------------------
-# Section 3: Plots
-# -----------------------------
-col1, col2 = st.columns(2)
-with col1:
-    plot_top_view(shots, selected_shots_idx)
-with col2:
-    plot_side_view(shots, selected_shots_idx)
-
-# -----------------------------
-# Section 4: Export
+# Section 5: Export
 # -----------------------------
 st.header("Export Data")
 export_section(df, component_avg)
 
 # -----------------------------
-# Section 5: Notes
+# Section 6: Notes
 # -----------------------------
 show_notes()
 

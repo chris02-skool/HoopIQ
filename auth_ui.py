@@ -1,4 +1,5 @@
 # The authentication UI for the app
+# auth_ui.py
 
 import streamlit as st
 from auth_utils import login, register, delete_user, change_password
