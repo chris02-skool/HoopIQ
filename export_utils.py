@@ -22,7 +22,7 @@ def export_section(df, component_avg):
         default=["Shot Data"]
     )
 
-    export_format = st.selectbox("Select Export Format:", ["CSV", "Excel", "JSON"])
+    export_format = st.selectbox("Select Export Format:", ["Excel", "CSV", "JSON"])
 
     if st.button("Export"):
         if export_format == "CSV":
