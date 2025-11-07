@@ -1,7 +1,8 @@
 [
     {
         "session_number": 1,
-        "date_time": "2025-11-01 15:30",
+        "datetime": "2025-11-01 15:30",
+        "component_avg": {"Backboard": 0.6, "Rim": 0.7, "Net": 0.8, "Game Make": 0.7},
         "shots": [
             {"top_x": 0, "top_y": 5, "side_x": 0, "side_y": 10, "Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1, "result": "Make"},
             {"top_x": -2, "top_y": 6, "side_x": -2, "side_y": 11, "Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 1, "result": "Make"},
@@ -17,7 +18,8 @@
     },
     {
         "session_number": 2,
-        "date_time": "2025-10-30 14:10",
+        "datetime": "2025-10-30 14:10",
+        "component_avg": {"Backboard": 0.55, "Rim": 0.65, "Net": 0.75, "Game Make": 0.65},
         "shots": [
             {"top_x": 0, "top_y": 5, "side_x": 0, "side_y": 10, "Backboard": 1, "Rim": 0, "Net": 1, "Game Make": 0, "result": "Miss"},
             {"top_x": -1, "top_y": 6, "side_x": -1, "side_y": 11, "Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1, "result": "Make"},
@@ -33,7 +35,8 @@
     },
     {
         "session_number": 3,
-        "date_time": "2025-10-28 16:50",
+        "datetime": "2025-10-28 16:50",
+        "component_avg": {"Backboard": 0.58, "Rim": 0.68, "Net": 0.78, "Game Make": 0.68},
         "shots": [
             {"top_x": 0, "top_y": 5, "side_x": 0, "side_y": 10, "Backboard": 1, "Rim": 1, "Net": 1, "Game Make": 1, "result": "Make"},
             {"top_x": 1, "top_y": 6, "side_x": 1, "side_y": 11, "Backboard": 0, "Rim": 1, "Net": 1, "Game Make": 1, "result": "Make"},
