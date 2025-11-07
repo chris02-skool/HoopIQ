@@ -20,90 +20,47 @@ from sidebar_ui import sidebar_ui
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
 # -----------------------------
-# Sidebar
+# Dev mode toggle (above login)
 # -----------------------------
-# Set dev_mode=True for testing without real login/data
-newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=True)
-if newest_sessions is None:
-    st.stop()  # Not logged in
+dev_mode = st.sidebar.checkbox("🛠️ Dev Mode", value=False)
+
+# -----------------------------
+# Sidebar & session handling
+# -----------------------------
+newest_sessions, oldest_sessions, newest_indices = sidebar_ui(dev_mode=dev_mode)
+
+# Stop app if user is not logged in
+if st.session_state.get("username") is None:
+    st.stop()
 
 # -----------------------------
 # Main App
 # -----------------------------
 st.title("🏀 Basketball Shot Tracker")
 
-# -----------------------------
-# Section 1: Oldest sessions overview
-# -----------------------------
-if st.session_state.get("show_oldest", False):
-    st.header("Oldest Sessions (4th-10th)")
-    if oldest_sessions:
-        avg_table = []
-        for i, s in enumerate(oldest_sessions):
-            avg_table.append({
-                "Session": f"{i+4}",  # 4th to 10th
-                "Datetime": s["datetime"],
-                "Backboard": s["component_avg"]["Backboard"],
-                "Rim": s["component_avg"]["Rim"],
-                "Net": s["component_avg"]["Net"],
-                "Game Make %": s["game_make_avg"]
-            })
-        st.table(avg_table)
-    else:
-        st.info("No older sessions yet.")
-else:
-    # -----------------------------
-    # Section 2: Newest sessions full data
-    # -----------------------------
-    st.header("Shot Results / Selected Sessions")
-    combined_shots = []
-    combined_component_avg = {"Backboard":0, "Rim":0, "Net":0}
-    combined_game_make_avg = 0.0
+# Section 1: Shot Results
+st.header("Shot Results")
+st.dataframe(df)
+st.markdown("**Technical Component Averages:**")
+st.write(component_avg)
+st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 
-    if newest_sessions:
-        for idx in newest_indices:
-            session = newest_sessions[idx]
-            combined_shots.extend(session.get("shot_data", []))
-            comp = session.get("component_avg", {"Backboard":0, "Rim":0, "Net":0})
-            combined_component_avg["Backboard"] += comp["Backboard"]
-            combined_component_avg["Rim"] += comp["Rim"]
-            combined_component_avg["Net"] += comp["Net"]
-            combined_game_make_avg += session.get("game_make_avg", 0)
+# Section 2: Shot Selection
+st.header("Select Shot(s) to Display")
+selected_shots_idx = selected_shots_idx(shots)
 
-        n = len(newest_indices)
-        if n > 0:
-            combined_component_avg = {k:v/n for k,v in combined_component_avg.items()}
-            combined_game_make_avg /= n
+# Section 3: Plots
+col1, col2 = st.columns(2)
+with col1:
+    plot_top_view(shots, selected_shots_idx)
+with col2:
+    plot_side_view(shots, selected_shots_idx)
 
-    st.dataframe(df)  # Placeholder: real implementation would merge session shot_data
-    st.markdown("**Technical Component Averages:**")
-    st.write(combined_component_avg)
-    st.write(f"**Overall Game Make Rate:** {combined_game_make_avg:.2f}")
-
-    # -----------------------------
-    # Section 3: Shot Selection
-    # -----------------------------
-    st.header("Select Shot(s) to Display")
-    selected_shots_idx(combined_shots)
-
-    # -----------------------------
-    # Section 4: Plots
-    # -----------------------------
-    col1, col2 = st.columns(2)
-    with col1:
-        plot_top_view(combined_shots, list(range(len(combined_shots))))
-    with col2:
-        plot_side_view(combined_shots, list(range(len(combined_shots))))
-
-# -----------------------------
-# Section 5: Export
-# -----------------------------
+# Section 4: Export
 st.header("Export Data")
 export_section(df, component_avg)
 
-# -----------------------------
-# Section 6: Notes
-# -----------------------------
+# Section 5: Notes
 show_notes()
 
 # --------------------------------------
