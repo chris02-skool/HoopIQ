@@ -63,14 +63,14 @@ def main_menu(username, dev_mode=False):
         st.subheader("Average Stats: Oldest 7 Sessions")
         avg_stats = []
         for session in oldest_sessions:
-            comp = session['component_avg']
+            comp = session.get('component_avg', {})
             avg_stats.append({
                 "Session": session['session_number'],
                 "Date/Time": session['datetime'],
-                "Backboard %": round(comp['Backboard'],2),
-                "Rim %": round(comp['Rim'],2),
-                "Net %": round(comp['Net'],2),
-                "Make %": round(comp['Game Make'],2)
+                "Backboard %": round(comp.get('Backboard', 0), 2),
+                "Rim %": round(comp.get('Rim', 0), 2),
+                "Net %": round(comp.get('Net', 0), 2),
+                "Make %": round(comp.get('Game Make', 0), 2)
             })
         st.table(avg_stats)
     else:
@@ -78,7 +78,21 @@ def main_menu(username, dev_mode=False):
         session = newest_sessions[st.session_state.selected_session_idx]
         st.subheader(f"Session {session['session_number']} - {session['datetime']} Full Data")
 
-        shots = session['shots']
+        shots = session.get('shots', [])
+
+        # -------------------------
+        # Compute averages if missing
+        # -------------------------
+        if 'component_avg' in session:
+            comp_avg = session['component_avg']
+        else:
+            if shots:
+                df = pd.DataFrame(shots)
+                comp_avg = df[['Backboard', 'Rim', 'Net']].mean().to_dict()
+                comp_avg['Game Make'] = df['Game Make'].mean()
+            else:
+                comp_avg = {"Backboard": 0, "Rim": 0, "Net": 0, "Game Make": 0}
+
         # Get selected shots indices for display
         selected_idx = selected_shots_idx(shots)
 
@@ -88,12 +102,11 @@ def main_menu(username, dev_mode=False):
 
         # Component averages
         st.markdown("### Component Averages")
-        comp_avg = session['component_avg']
         st.write({
-            "Backboard": comp_avg['Backboard'],
-            "Rim": comp_avg['Rim'],
-            "Net": comp_avg['Net'],
-            "Game Make": comp_avg['Game Make']
+            "Backboard": round(comp_avg['Backboard'], 2),
+            "Rim": round(comp_avg['Rim'], 2),
+            "Net": round(comp_avg['Net'], 2),
+            "Game Make": round(comp_avg['Game Make'], 2)
         })
 
         # Export section
