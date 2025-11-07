@@ -18,7 +18,7 @@ game_make_avg = df["Game Make"].mean()
 
 # Placeholder shot trajectories
 shots = [ 
-     {'top_x':[0, 1, 0, 0], 'top_y':[22, 18, 12, 5.25], 'side_x':[0,10,20,25], 'side_y':[6,8,9,10], 'result':'Make'},
+    {'top_x':[0, 1, 0, 0], 'top_y':[22, 18, 12, 5.25], 'side_x':[0,10,20,25], 'side_y':[6,8,9,10], 'result':'Make'},
     {'top_x':[0, 2, 1, 0], 'top_y':[22,17.5,11,5.25], 'side_x':[0,10,20,25], 'side_y':[6,8,9,10], 'result':'Make'},
     {'top_x':[0, 0, 0, 0], 'top_y':[22,18,12,5.25], 'side_x':[0,10,20,25], 'side_y':[6,8,9,10], 'result':'Make'},
     {'top_x':[0, -2, -3, -3], 'top_y':[22,17,12,6], 'side_x':[0,10,20,25], 'side_y':[6,9,8,4], 'result':'Miss'},
