@@ -47,7 +47,7 @@ def main_menu(username, dev_mode=False):
 
     # Newest 3 sessions
     for i, session in enumerate(newest_sessions):
-        btn_label = f"Session {session['session_number']} - {session['datetime']}"
+        btn_label = f"Session {session.get('session_number', '?')} - {session.get('datetime', session.get('date_time', session.get('date', 'Unknown Date')))}"
         if st.sidebar.button(btn_label):
             set_session(i)
 
