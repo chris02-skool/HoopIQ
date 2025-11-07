@@ -1,7 +1,9 @@
-# auth_ui.py (dev bypass)
+# auth_ui.py
 import streamlit as st
 from auth_utils import login, register, delete_user, change_password
 import re
+
+DEV_USERNAME = "dev"  # single dev username used for bypass
 
 def validate_password(password):
     """Check if password meets requirements."""
@@ -21,7 +23,7 @@ def auth_ui():
     Returns True if the user is logged in, False otherwise.
     """
     # -----------------------------
-    # Initialize session state variables
+    # Initialize session state variables (including dev-mode guard)
     # -----------------------------
     defaults = {
         "logged_in": False,
@@ -32,38 +34,47 @@ def auth_ui():
         "register_username": "",
         "register_password": "",
         "message": "",
-        # dev mode keys
+        # dev mode
         "dev_mode_enabled": False,
-        "dev_selected_user": "dev_user",
+        "prev_dev_mode": False,  # track previous checkbox value to detect toggles
     }
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
 
     # -----------------------------
-    # --- Dev Mode (for testing) ---
+    # Dev Mode checkbox (single toggle)
+    # - When checked -> automatically log in as `DEV_USERNAME`
+    # - When unchecked -> if previously in dev mode, log out and return to login screen
     # -----------------------------
-    st.markdown("**Developer / Test Mode** (for local testing only)")
-    dev_col1, dev_col2 = st.columns([2,1])
-    with dev_col1:
-        st.session_state.dev_mode_enabled = st.checkbox(
-            "Enable Dev Mode (bypass auth)",
-            value=st.session_state.dev_mode_enabled,
-            help="Enabling this lets you quickly log in as a dev user for testing. Do NOT use in production."
-        )
-    with dev_col2:
-        dev_users = ["dev_user", "dev_coach", "dev_admin"]
-        st.session_state.dev_selected_user = st.selectbox(
-            "Dev user:", options=dev_users, index=0
-        )
+    st.markdown("**Developer / Test Mode (local only)**")
+    st.session_state.dev_mode_enabled = st.checkbox(
+        "Enable Dev Mode (bypass login)",
+        value=st.session_state.dev_mode_enabled,
+        help="Toggle to bypass login for local testing. Uncheck to return to the login screen."
+    )
 
-    if st.session_state.dev_mode_enabled:
-        if st.button("Login as Dev"):
-            st.session_state.logged_in = True
-            st.session_state.username = st.session_state.dev_selected_user
+    # Detect transitions
+    prev = st.session_state.prev_dev_mode
+    curr = st.session_state.dev_mode_enabled
+
+    # If user toggled ON dev mode this run -> log in as dev immediately
+    if not prev and curr:
+        st.session_state.logged_in = True
+        st.session_state.username = DEV_USERNAME
+        st.session_state.screen = "login"  # keep main flow consistent
+        # no return here — let the function continue so sidebar renders in same run
+
+    # If user toggled OFF dev mode this run and they were logged in as dev -> log out
+    if prev and not curr:
+        if st.session_state.logged_in and st.session_state.username == DEV_USERNAME:
+            st.session_state.logged_in = False
+            st.session_state.username = ""
             st.session_state.screen = "login"
-            st.success(f"✅ Dev login as {st.session_state.username}")
-            return True
+            st.info("Dev Mode disabled — returned to login screen.")
+
+    # update prev_dev_mode for next run
+    st.session_state.prev_dev_mode = curr
 
     # -----------------------------
     # Logged-in state: show sidebar and account management
@@ -86,8 +97,9 @@ def auth_ui():
                     elif not validate_password(new_pw):
                         st.warning("⚠️ Password does not meet requirements.")
                     else:
-                        if st.session_state.dev_mode_enabled and st.session_state.username.startswith("dev_"):
-                            st.info("Dev users are not persisted; password change skipped for dev user.")
+                        # dev user is not persisted
+                        if st.session_state.username == DEV_USERNAME:
+                            st.info("Dev user — password change skipped (not persisted).")
                         else:
                             if change_password(st.session_state.username, new_pw):
                                 st.success("✅ Password updated successfully.")
@@ -98,11 +110,14 @@ def auth_ui():
         # Logout
         # -----------------------------
         if st.sidebar.button("Logout"):
+            # If logged out via sidebar, also clear dev-mode checkbox if it was set
             st.session_state.logged_in = False
             st.session_state.username = ""
             st.session_state.screen = "login"
             st.session_state.message = ""
-            st.session_state.dev_mode_enabled = False
+            if st.session_state.dev_mode_enabled:
+                st.session_state.dev_mode_enabled = False
+                st.session_state.prev_dev_mode = False
 
         # ---------------------------
         # Delete Account
@@ -114,11 +129,14 @@ def auth_ui():
                 submit_delete = st.form_submit_button("Delete Account Permanently")
                 if submit_delete:
                     if confirm_delete:
-                        if st.session_state.dev_mode_enabled and st.session_state.username.startswith("dev_"):
-                            st.info("Dev user - nothing to delete from persistent store.")
+                        if st.session_state.username == DEV_USERNAME:
+                            st.info("Dev user — nothing to delete from persistent store.")
                             st.session_state.logged_in = False
                             st.session_state.username = ""
                             st.session_state.screen = "login"
+                            # also clear dev-mode checkbox
+                            st.session_state.dev_mode_enabled = False
+                            st.session_state.prev_dev_mode = False
                         else:
                             if delete_user(st.session_state.username):
                                 st.success("✅ Account deleted successfully.")
@@ -130,16 +148,17 @@ def auth_ui():
                     else:
                         st.info("Please confirm deletion by checking the box.")
 
-        return True
+        return True  # logged in
 
     # -----------------------------
-    # Login Screen
+    # Login Screen (normal)
     # -----------------------------
     if st.session_state.screen == "login":
         st.subheader("Login")
         st.write("Enter your username and password. If you don't have an account, click Register.")
         st.write("**Note:** You may need to double-click buttons due to Streamlit behavior.")
 
+        # Use a form for predictable submit behavior
         with st.form(key="login_form"):
             st.session_state.login_username = st.text_input(
                 "Username", value=st.session_state.login_username
@@ -184,6 +203,7 @@ def auth_ui():
         )
         st.write("**Note:** You may need to double-click buttons due to Streamlit behavior.")
 
+        # Use a form for register as well
         with st.form(key="register_form"):
             st.session_state.register_username = st.text_input(
                 "Desired Username", value=st.session_state.register_username
