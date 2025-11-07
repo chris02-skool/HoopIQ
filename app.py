@@ -4,7 +4,6 @@
 # Team Members: Christopher Hong, Alfonso Mejia Vasquez, Gondra Kelly, Matthew Margulies, Carlos Orozco
 # Start Web Development Date: October 2025
 # Finished Web Development Date: June 2026 (Ideally)
- 
 
 import streamlit as st
 from data import df, shots, component_avg, game_make_avg
@@ -19,13 +18,45 @@ from auth_ui import auth_ui
 # -----------------------------
 st.set_page_config(page_title="Basketball Shot Tracker", layout="wide")
 
+# -----------------------------
+# DEV ONLY: quick bypass for testing session features without login
+# Keep this block while developing; remove or guard before production.
+# -----------------------------
+if "dev_mode" not in st.session_state:
+    st.session_state.dev_mode = False
+
+with st.sidebar:
+    st.markdown("### Dev / Test Controls")
+    # Toggle dev bypass on/off
+    st.session_state.dev_mode = st.checkbox(
+        "Enable dev bypass (no login)", value=st.session_state.dev_mode
+    )
+    if st.session_state.dev_mode:
+        st.markdown(
+            "<small><em>Dev mode active — using username: <code>dev_user</code>. "
+            "Session files will be written locally as <code>sessions_dev_user_*.json</code>.</em></small>",
+            unsafe_allow_html=True,
+        )
+
+# If dev mode is enabled, set a stable dev username and mark logged_in
+if st.session_state.get("dev_mode", False):
+    st.session_state.username = st.session_state.get("username", "dev_user") or "dev_user"
+    st.session_state.logged_in = True
+    st.session_state.screen = "login"
+# -----------------------------
+# End DEV ONLY block
+# -----------------------------
+
+# -----------------------------
 # Step 1: Render login/register and get login status
+# -----------------------------
 logged_in = auth_ui()
 
+# -----------------------------
 # Step 2: Stop the app if user is not logged in
-# Comment out the following line during development to bypass login
 if not logged_in:
     st.stop()
+# -----------------------------
 
 # -----------------------------
 # Main App (only for logged-in users)

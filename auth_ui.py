@@ -63,8 +63,9 @@ def auth_ui():
                             st.success("✅ Password updated successfully.")
                         else:
                             st.error("❌ Could not update password.")
-
+        # -----------------------------
         # Logout
+        # -----------------------------
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
             st.session_state.username = ""
