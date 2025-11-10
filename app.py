@@ -8,12 +8,13 @@
 
 import streamlit as st
 # from data import df, shots, component_avg, game_make_avg
-from session_loader import load_newest_session
+from session_loader import load_newest_3_sessions
 from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
 from auth_ui import auth_ui
+import pandas as pd
 
 # -----------------------------
 # Streamlit config
@@ -28,15 +29,34 @@ if not logged_in:
     st.stop()
 
 # -----------------------------
-# ✅ Load the newest session data here
+# ✅ Load the newest session data here (allow selecting from 3 newest)
 # -----------------------------
 username = st.session_state.get("username")
-
-if username:
-    df, shots, component_avg, game_make_avg = load_newest_session(username)
-else:
+if not username:
     st.warning("Please log in or enable dev mode to load session data.")
     st.stop()
+
+# Load up to 3 newest sessions
+newest_sessions = load_newest_3_sessions(username)
+
+# Build selection options
+session_options = [
+    f"Session {s['session_number']} ({s['datetime']})" for s in newest_sessions
+]
+
+# Let user pick which session to load
+selected_session_idx = st.selectbox(
+    "Select a session to view", 
+    range(len(session_options)),
+    format_func=lambda x: session_options[x]
+)
+
+# Load the selected session
+selected_session = newest_sessions[selected_session_idx]
+df = pd.DataFrame(selected_session["df"])
+shots = selected_session["shots"]
+component_avg = {col: df[col].mean() for col in ["Backboard", "Rim", "Net"]}
+game_make_avg = df["Game Make"].mean()
 
 # -----------------------------
 # Main App
