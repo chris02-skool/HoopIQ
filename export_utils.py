@@ -8,8 +8,9 @@ import json
 
 def export_section(df, component_avg):
     shot_data = df.copy()
-    component_averages = pd.DataFrame(component_avg).reset_index()
-    component_averages.columns = ["Component", "Average"]
+    component_averages = pd.DataFrame([component_avg])
+    component_averages = component_averages.melt(var_name="Component", value_name="Average")
+    
     game_make_rate = pd.DataFrame({
         "Total Shots": [len(df)],
         "Makes": [df['Game Make'].sum()],
