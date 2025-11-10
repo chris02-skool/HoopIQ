@@ -8,7 +8,7 @@
 
 import streamlit as st
 import pandas as pd
-from session_loader import load_newest_3_sessions
+from session_loader import load_newest_3_sessions, load_oldest_7_sessions
 from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
@@ -28,34 +28,57 @@ if not logged_in:
     st.stop()
 
 # -----------------------------
-# ✅ Load the newest session data here (allow selecting from 3 newest)
+# Load user session data
 # -----------------------------
 username = st.session_state.get("username")
 if not username:
     st.warning("Please log in or enable dev mode to load session data.")
     st.stop()
 
-# Load up to 3 newest sessions
+# Load newest 3 sessions
 newest_sessions = load_newest_3_sessions(username)
+# Load oldest 7 sessions
+oldest_sessions = load_oldest_7_sessions(username)
 
-# Build selection options
+# Build session selection options
 session_options = [
     f"Session {s['session_number']} ({s['datetime']})" for s in newest_sessions
-]
+] + ["Oldest Sessions 4-10"]
 
-# Let user pick which session to load
 selected_session_idx = st.selectbox(
-    "Select a session to view", 
+    "Select a session to view",
     range(len(session_options)),
     format_func=lambda x: session_options[x]
 )
 
-# Load the selected session
-selected_session = newest_sessions[selected_session_idx]
-df = pd.DataFrame(selected_session["df"])
-shots = selected_session["shots"]
-component_avg = {col: df[col].mean() for col in ["Backboard", "Rim", "Net"]}
-game_make_avg = df["Game Make"].mean()
+# -----------------------------
+# Load session data based on selection
+# -----------------------------
+if selected_session_idx < 3:
+    # Individual newest session
+    selected_session = newest_sessions[selected_session_idx]
+    df = pd.DataFrame(selected_session["df"])
+    shots = selected_session["shots"]
+    component_avg = {col: df[col].mean() for col in ["Backboard", "Rim", "Net"]}
+    game_make_avg = df["Game Make"].mean()
+    show_individual = True
+else:
+    # Oldest 4–10 sessions
+    df = pd.DataFrame([{
+        "Session Number": s["session_number"],
+        "DateTime": s["datetime"],
+        "Backboard Avg": s["Component_Averages"]["Backboard"],
+        "Rim Avg": s["Component_Averages"]["Rim"],
+        "Net Avg": s["Component_Averages"]["Net"],
+        "Game Make Avg": s["Game_Make_Avg"],
+        "Total Shots": s["Total_Shots"],
+        "Makes": s["Makes"],
+        "Misses": s["Misses"]
+    } for s in oldest_sessions])
+    shots = []
+    component_avg = {}
+    game_make_avg = None
+    show_individual = False
 
 # -----------------------------
 # Main App
@@ -67,26 +90,30 @@ st.title("🏀 Basketball Shot Tracker")
 # -----------------------------
 st.header("Shot Results")
 st.dataframe(df)
+
 st.markdown("**Technical Component Averages:**")
 st.write(component_avg)
-st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
+
+if show_individual:
+    st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
+else:
+    st.info("Showing summary of oldest sessions. Individual shot selection and plots are not available.")
 
 # -----------------------------
-# Section 2: Shot Selection
+# Section 2 & 3: Shot Selection and Plots
 # -----------------------------
-st.header("Select Shot(s) to Display")
-selected_idx = selected_shots_idx(shots)
+if show_individual:
+    # Shot Selection
+    st.header("Select Shot(s) to Display")
+    selected_idx = selected_shots_idx(shots)
 
-# -----------------------------
-# Section 3: Plots
-# -----------------------------
-col1, col2 = st.columns(2)
-with col1:
-    # guard: ensure selected_idx is a list of valid indices
-    safe_selected_idx = [i for i in selected_idx if isinstance(i, int) and 0 <= i < len(shots)]
-    plot_top_view(shots, safe_selected_idx)
-with col2:
-    plot_side_view(shots, safe_selected_idx)
+    # Plots
+    col1, col2 = st.columns(2)
+    with col1:
+        safe_selected_idx = [i for i in selected_idx if isinstance(i, int) and 0 <= i < len(shots)]
+        plot_top_view(shots, safe_selected_idx)
+    with col2:
+        plot_side_view(shots, safe_selected_idx)
 
 # -----------------------------
 # Section 4: Export
