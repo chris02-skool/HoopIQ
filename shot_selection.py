@@ -10,6 +10,11 @@ def selected_shots_idx(shots):
 
     if 'selected_shots' not in st.session_state:
         st.session_state.selected_shots = shot_labels.copy()
+    else:
+        # Filter previous selections to only include valid labels
+        st.session_state.selected_shots = [
+            s for s in st.session_state.selected_shots if s in shot_labels
+        ]
 
     col1, col2, col3, col4 = st.columns([1,1,1,1])
     with col1:
