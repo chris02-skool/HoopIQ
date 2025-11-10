@@ -7,14 +7,13 @@
 # app.py
 
 import streamlit as st
-# from data import df, shots, component_avg, game_make_avg
+import pandas as pd
 from session_loader import load_newest_3_sessions
 from shot_selection import selected_shots_idx
 from plot_utils import plot_top_view, plot_side_view
 from export_utils import export_section
 from notes import show_notes
 from auth_ui import auth_ui
-import pandas as pd
 
 # -----------------------------
 # Streamlit config
