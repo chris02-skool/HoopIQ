@@ -100,13 +100,12 @@ st.title("🏀 Basketball Shot Tracker")
 st.header("Shot Results")
 st.dataframe(df)
 
-st.markdown("**Technical Component Averages:**")
-st.write(component_avg)
-
 if show_individual:
+    st.markdown("**Technical Component Averages:**")
+    st.write(component_avg)
     st.write(f"**Overall Game Make Rate:** {game_make_avg:.2f}")
 else:
-    st.info("Showing summary of oldest sessions. Individual shot selection and plots are not available.")
+    st.info("Showing summary of oldest sessions. Individual shot selection, plots, and averages are not available.")
 
 # -----------------------------
 # Section 2 & 3: Shot Selection and Plots
