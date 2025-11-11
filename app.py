@@ -35,12 +35,13 @@ if not username:
     st.warning("Please log in or enable dev mode to load session data.")
     st.stop()
 
-# Load newest 3 sessions
+# Load sessions
 newest_sessions = load_newest_3_sessions(username)
-# Load oldest 7 sessions
 oldest_sessions = load_oldest_7_sessions(username)
 
-# Build session selection options
+# -----------------------------
+# Session selection dropdown
+# -----------------------------
 session_options = [
     f"Session {s['session_number']} ({s['datetime']})" for s in newest_sessions
 ] + ["Oldest Sessions 4-10"]
@@ -63,7 +64,7 @@ if selected_session_idx < 3:
     game_make_avg = df["Game Make"].mean()
     show_individual = True
 else:
-    # Oldest 4–10 sessions
+    # Oldest 4–10 sessions summary
     df = pd.DataFrame([{
         "Session Number": s["session_number"],
         "DateTime": s["datetime"],
@@ -75,8 +76,16 @@ else:
         "Makes": s["Makes"],
         "Misses": s["Misses"]
     } for s in oldest_sessions])
+    
+    # Sort table newest → oldest
+    df = df.sort_values("DateTime", ascending=False).reset_index(drop=True)
+    
     shots = []
-    component_avg = {}
+    component_avg = {
+        "Backboard": df["Backboard Avg"].mean(),
+        "Rim": df["Rim Avg"].mean(),
+        "Net": df["Net Avg"].mean()
+    }
     game_make_avg = None
     show_individual = False
 
@@ -103,11 +112,9 @@ else:
 # Section 2 & 3: Shot Selection and Plots
 # -----------------------------
 if show_individual:
-    # Shot Selection
     st.header("Select Shot(s) to Display")
     selected_idx = selected_shots_idx(shots)
 
-    # Plots
     col1, col2 = st.columns(2)
     with col1:
         safe_selected_idx = [i for i in selected_idx if isinstance(i, int) and 0 <= i < len(shots)]
@@ -119,7 +126,10 @@ if show_individual:
 # Section 4: Export
 # -----------------------------
 st.header("Export Data")
-export_section(df, component_avg)
+if show_individual:
+    export_section(df, component_avg)
+else:
+    st.info("Export not available for summary of oldest sessions.")
 
 # -----------------------------
 # Section 5: Notes

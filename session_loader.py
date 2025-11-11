@@ -28,5 +28,5 @@ def load_oldest_7_sessions(username):
         data = json.load(f)
 
     # Sort sessions by datetime ascending (oldest first)
-    sorted_sessions = sorted(data, key=lambda s: s["datetime"])
+    sorted_sessions = sorted(data, key=lambda s: s["datetime"], reverse=True)
     return sorted_sessions
