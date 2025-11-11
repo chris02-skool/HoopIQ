@@ -141,8 +141,8 @@ show_notes()
 # --------------------------------------
 #
 # NOTES:
-# - Next Step: Add real ball trajectory data when available.
-# - Future: Let users export multiple datasets in one file.
+# - Add real ball trajectory data when available.
+# - Let users export multiple datasets in one file.
 # - A button to let the user scan their ball using the camera from tracking codes (will be at top).
 # - Integrate real sensor data for shot results and trajectory.
 # - Add a heat map of shot locations on the court to show how good you shot from a certain spot
