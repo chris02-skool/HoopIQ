@@ -147,7 +147,6 @@ show_notes()
 # - Integrate real sensor data for shot results and trajectory.
 # - Add a heat map of shot locations on the court to show how good you shot from a certain spot
 # - Find a way to move the old session when a new session is created
-# - Add ability to save shot data
 # - Add ability to compare multiple sessions (Bonus goal)
 # - Add more detailed technical feedback based on shot data (if possible)
 # - Data should add lines after every shot, so the user can see their progress over time (can only test with real data)
